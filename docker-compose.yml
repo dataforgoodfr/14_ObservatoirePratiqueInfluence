@@ -1,0 +1,17 @@
+
+services:
+  opi-api:
+    build:
+      context: ./opi-api
+      dockerfile: ./Dockerfile
+    command: [ "uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0"]
+    environment:
+      - DEBUG_BREAK_ON_EXCEPTION=true
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    volumes:
+      - ./opi-api:/opi-api
+    stdin_open: true
+    tty: true

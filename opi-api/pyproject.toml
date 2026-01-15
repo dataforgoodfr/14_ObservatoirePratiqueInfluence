@@ -1,0 +1,9 @@
+[project]
+name = "opi-api"
+version = "0.1.0"
+description = "Rest API for observatoire des pratique influence"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[all]>=0.128.0",
+]
