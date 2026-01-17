@@ -1,17 +1,38 @@
 
 services:
   opi-api:
-    build:
-      context: ./opi-api
-      dockerfile: ./Dockerfile
-    command: [ "uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0"]
+    image: opi-api:latest
     environment:
       - DEBUG_BREAK_ON_EXCEPTION=true
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgres:5432/opidb?sslmode=disable
+      - HOST=0.0.0.0
+      - RELOAD=true
+      - PORT=8000
     ports:
       - "8000:8000"
     expose:
       - "8000"
     volumes:
-      - ./opi-api:/opi-api
+      - ./opi-api/app:/opi-api/app
     stdin_open: true
     tty: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: postgres:18.1
+    restart: unless-stopped
+    volumes:
+      - .local/postgresql.conf:/etc/postgresql/postgresql.conf
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: opidb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    expose:
+      - '5432'
+    healthcheck:
+      test: pg_isready
+      interval: 5s
+      retries: 20
+      start_period: 30s
