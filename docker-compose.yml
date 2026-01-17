@@ -19,6 +19,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  opi-frontend:
+    image: opi-frontend:latest
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      opi-api:
+        condition: service_started
   postgres:
     image: postgres:18.1
     restart: unless-stopped
