@@ -31,6 +31,7 @@ services:
     depends_on:
       opi-api:
         condition: service_started
+
   postgres:
     image: postgres:18.1
     restart: unless-stopped
@@ -48,3 +49,19 @@ services:
       interval: 5s
       retries: 20
       start_period: 30s
+
+  nocodb:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NC_DB: "pg://postgres:5432?u=postgres&p=postgres&d=ncdb"
+    image: "nocodb/nocodb:0.301.1"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "nc_data:/usr/app/data"
+    restart: unless-stopped
+
+volumes:
+  nc_data:
