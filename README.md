@@ -1,7 +1,7 @@
 This repository contains the frontend and API for the "Observatoire des pratiques d'influence" project.
 It uses FastAPI for the API and NextJS/React for the frontend.
 
-# Local development
+# Pre-requisites
 
 You will need to have [docker](https://www.docker.com/) to run the local stack.
 
