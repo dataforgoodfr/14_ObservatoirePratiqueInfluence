@@ -21,7 +21,7 @@ CREATE TABLE "v1"."account" (
   "view_count" INT,
   "like_count" INT,
   "categories" TEXT [],
-  "account_scrapped_at" timestamptz
+  "account_scraped_at" timestamptz
 );
 
 CREATE TABLE "v1"."post" (
@@ -30,7 +30,7 @@ CREATE TABLE "v1"."post" (
     "account_uid" uuid REFERENCES "v1"."account" ("uid"),
     "post_url" TEXT NOT NULL,
     "published_at" timestamptz,
-    "post_scrapped_at" timestamptz,
+    "post_scraped_at" timestamptz,
     "title" TEXT,
     "description" TEXT,
     "comment_count" INT,
@@ -73,7 +73,7 @@ CREATE TABLE "v1"."comment" (
     "content" TEXT NOT NULL
 );
 
-CREATE TABLE "v1"."scrapping_task" (
+CREATE TABLE "v1"."scraping_task" (
     "uid" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
     "created_at" timestamptz NOT NULL DEFAULT (now()),
     "type" TEXT NOT NULL,
