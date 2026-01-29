@@ -1,0 +1,67 @@
+
+services:
+  opi-api:
+    image: opi-api:latest
+    environment:
+      - DEBUG_BREAK_ON_EXCEPTION=true
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgres:5432/opidb?sslmode=disable
+      - HOST=0.0.0.0
+      - RELOAD=true
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    volumes:
+      - ./opi-api/app:/opi-api/app
+    stdin_open: true
+    tty: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  opi-frontend:
+    image: opi-frontend:latest
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      opi-api:
+        condition: service_started
+
+  postgres:
+    image: postgres:18.1
+    restart: unless-stopped
+    volumes:
+      - .local/postgresql.conf:/etc/postgresql/postgresql.conf
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: opidb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    expose:
+      - '5432'
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 5s
+      retries: 20
+      start_period: 30s
+
+  nocodb:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NC_DB: "pg://postgres:5432?u=postgres&p=postgres&d=ncdb"
+    image: "nocodb/nocodb:0.301.1"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "nc_data:/usr/app/data"
+    restart: unless-stopped
+
+volumes:
+  nc_data:
