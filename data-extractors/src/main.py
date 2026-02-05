@@ -6,6 +6,9 @@ from os import path
 import os
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
+from data_extractors.youtube.disk_cache import DiskCacheConfig
+from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
+from data_extractors.youtube.youtube_extractor import YoutubeExtractor
 from extraction_task.local.local_extraction_task_service import (
     LocalExtractionTaskService,
 )
@@ -29,7 +32,16 @@ def create_extractor(social_network: SocialNetwork, cache_folder: str) -> DataEx
         case SocialNetwork.TIKTOK:
             return TiktokExtractor()
         case SocialNetwork.YOUTUBE:
-            raise Exception("TODOs")
+            api_key = os.getenv("YOUTUBE_API_KEY")
+            if not api_key:
+                raise Exception("YOUTUBE_API_KEY environment variable is required")
+            api_config = YoutubeApiConfig(
+                api_key=api_key,
+                cache_config=DiskCacheConfig(
+                    cache_dir=path.join(cache_folder, "youtube")
+                ),
+            )
+            return YoutubeExtractor(api_config=api_config)
 
 
 @dataclass
