@@ -67,9 +67,16 @@ class TaskRepository:
         return next_task
 
     def replace_all(self, tasks: List[ExtractionTask]) -> None:
-        with open(self._csv_file, "w") as f:
+        self._write_tasks(tasks, replace=False)
+
+    def append_all(self, tasks: List[ExtractionTask]) -> None:
+        self._write_tasks(tasks, replace=False)
+
+    def _write_tasks(self, tasks: List[ExtractionTask], replace: bool) -> None:
+        with open(self._csv_file, "w" if replace else "a") as f:
             w = csv.DictWriter(f, ExtractionTask.__annotations__.keys())
-            w.writeheader()
+            if replace:
+                w.writeheader()
             csv_rows = [self.__to_csv_dict(task) for task in tasks]
             w.writerows(csv_rows)
 

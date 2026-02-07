@@ -5,10 +5,11 @@ This script reads account URLs from account_urls.csv and generates
 a extraction_tasks.csv file with tasks for extracting account and post-list data.
 """
 
+import argparse
 import csv
 import datetime
 import logging
-from os import path
+from urllib.parse import urlparse
 import uuid
 
 
@@ -26,24 +27,46 @@ from extraction_task.social_network import SocialNetwork
 
 
 def extract_network_and_account_id(url: str) -> tuple[SocialNetwork, str]:
-    if url.startswith("https://www.instagram.com/"):
-        account_id = url.rstrip("/").split("/")[-1]
+    parsed = urlparse(url)
+    netloc = parsed.netloc
+    path_fragments = parsed.path.strip("/").split("/")
+    if netloc == "www.instagram.com":
+        account_id = path_fragments[-1]
         return (SocialNetwork.INSTAGRAM, account_id)
-    if url.startswith("https://www.youtube.com/channel/"):
-        account_id = url.rstrip("/").split("/")[-1]
+    if netloc == "www.youtube.com" and path_fragments[0] == "channel":
+        account_id = path_fragments[-1]
         return (SocialNetwork.YOUTUBE, account_id)
-    if url.startswith("https://www.tiktok.com/"):
-        account_id = url.rstrip("/").split("/")[-1]
+    if netloc == "www.tiktok.com":
+        account_id = path_fragments[-1]
         return (SocialNetwork.TIKTOK, account_id)
     else:
         raise Exception("unmatched url" + url)
 
 
-published_after = datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc)
-published_before = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+# Default date range
+DEFAULT_PUBLISHED_AFTER = datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc)
+DEFAULT_PUBLISHED_BEFORE = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
 
 
-def generate_tasks_from_accounts(account_urls_file: str, tasks_csv_file: str) -> None:
+def generate_tasks_from_accounts(
+    account_urls_file: str,
+    tasks_csv_file: str,
+    task_type: str = "all",
+    published_after: datetime.datetime = DEFAULT_PUBLISHED_AFTER,
+    published_before: datetime.datetime = DEFAULT_PUBLISHED_BEFORE,
+    replace: bool = True,
+) -> None:
+    """
+    Generate extraction tasks from account URLs.
+
+    Args:
+        account_urls_file: Path to the input CSV file with account URLs
+        tasks_csv_file: Path to the output CSV file for extraction tasks
+        task_type: Which task types to generate ("all", "account", or "post-list")
+        published_after: Start date for post list extraction (ISO format or datetime)
+        published_before: End date for post list extraction (ISO format or datetime)
+        replace: If True, replace existing tasks; if False, append to existing tasks
+    """
     # Read the input file
     with open(account_urls_file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -57,37 +80,47 @@ def generate_tasks_from_accounts(account_urls_file: str, tasks_csv_file: str) ->
     for url in urls:
         (social_network, account_id) = extract_network_and_account_id(url)
 
-        # Generate two tasks per id: extract-account and extract-post-list
+        # Generate tasks based on task_type parameter
 
-        account_task = ExtractionTask(
-            id=uuid.uuid4(),
-            social_network=social_network,
-            type=ExtractionTaskType.EXTRACT_ACCOUNT,
-            task_config=ExtractAccountTaskConfig(account_id=account_id),
-            status=ExtractionTaskStatus.AVAILABLE,
-            error=None,
-            visible_at=None,
-        )
+        if task_type in ("all", "account"):
+            account_task = ExtractionTask(
+                id=uuid.uuid4(),
+                social_network=social_network,
+                type=ExtractionTaskType.EXTRACT_ACCOUNT,
+                task_config=ExtractAccountTaskConfig(account_id=account_id),
+                status=ExtractionTaskStatus.AVAILABLE,
+                error=None,
+                visible_at=None,
+            )
+            tasks.append(account_task)
 
-        post_list_task = ExtractionTask(
-            id=uuid.uuid4(),
-            social_network=social_network,
-            type=ExtractionTaskType.EXTRACT_POST_LIST,
-            task_config=ExtractPostListTaskConfig(
-                account_id=account_id,
-                published_after=published_after,
-                published_before=published_before,
-            ),
-            status=ExtractionTaskStatus.AVAILABLE,
-            error=None,
-            visible_at=None,
-        )
-
-        tasks.append(account_task)
-        tasks.append(post_list_task)
+        if task_type in ("all", "post-list"):
+            post_list_task = ExtractionTask(
+                id=uuid.uuid4(),
+                social_network=social_network,
+                type=ExtractionTaskType.EXTRACT_POST_LIST,
+                task_config=ExtractPostListTaskConfig(
+                    account_id=account_id,
+                    published_after=published_after,
+                    published_before=published_before,
+                ),
+                status=ExtractionTaskStatus.AVAILABLE,
+                error=None,
+                visible_at=None,
+            )
+            tasks.append(post_list_task)
 
     repo = TaskRepository(tasks_csv_file=tasks_csv_file)
-    repo.replace_all(tasks)
+    if replace:
+        repo.replace_all(tasks)
+    else:
+        repo.append_all(tasks)
+
+
+def parse_date(date_str: str) -> datetime.datetime:
+    return datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(
+        tzinfo=datetime.timezone.utc
+    )
 
 
 def main() -> None:
@@ -99,13 +132,64 @@ def main() -> None:
         ],
     )
 
-    """Main function to execute the transformation."""
-    data_folder = "data"
-    input_file = path.join(data_folder, "account_urls.csv")
-    output_file = path.join(data_folder, "extraction_tasks.csv")
+    parser = argparse.ArgumentParser(
+        description="Generate extraction tasks from account URLs."
+    )
+    parser.add_argument(
+        "--task-type",
+        choices=["all", "account", "post-list"],
+        default="all",
+        help="Which task types to generate (default: all)",
+    )
+    parser.add_argument(
+        "--published-after",
+        type=str,
+        default="2025-01-01",
+        help="Start date for post list extraction in YYYY-MM-DD  format (default: 2025-01-01)",
+    )
+    parser.add_argument(
+        "--published-before",
+        type=str,
+        default="2026-01-01",
+        help="End date for post list extraction in YYYY-MM-DD format (default: 2026-01-01)",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["replace", "append"],
+        default="replace",
+        help="Whether to replace existing tasks or append to them (default: replace)",
+    )
+    parser.add_argument(
+        "--input",
+        type=str,
+        default="data/account_urls.csv",
+        help="Path to the input CSV file with account URLs (default: data/account_urls.csv)",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="data/extraction_tasks.csv",
+        help="Path to the output CSV file for extraction tasks (default: data/extraction_tasks.csv)",
+    )
 
-    generate_tasks_from_accounts(input_file, output_file)
-    print(f"Successfully generated {output_file}")
+    args = parser.parse_args()
+
+    # Parse dates
+    published_after = parse_date(args.published_after)
+    published_before = parse_date(args.published_before)
+
+    # Determine if we should replace or append
+    replace = args.mode == "replace"
+
+    generate_tasks_from_accounts(
+        account_urls_file=args.input,
+        tasks_csv_file=args.output,
+        task_type=args.task_type,
+        published_after=published_after,
+        published_before=published_before,
+        replace=replace,
+    )
+    print(f"Successfully generated {args.output}")
 
 
 if __name__ == "__main__":
