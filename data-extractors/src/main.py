@@ -1,7 +1,6 @@
 import argparse
 from dataclasses import dataclass
 import logging
-import logging.config
 from os import path
 import os
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
@@ -26,22 +25,23 @@ from extraction_task.social_network import SocialNetwork
 
 
 def create_extractor(social_network: SocialNetwork, cache_folder: str) -> DataExtractor:
-    match social_network:
-        case SocialNetwork.INSTAGRAM:
-            return InstagramExtractor()
-        case SocialNetwork.TIKTOK:
-            return TiktokExtractor()
-        case SocialNetwork.YOUTUBE:
-            api_key = os.getenv("YOUTUBE_API_KEY")
-            if not api_key:
-                raise Exception("YOUTUBE_API_KEY environment variable is required")
-            api_config = YoutubeApiConfig(
-                api_key=api_key,
-                cache_config=DiskCacheConfig(
-                    cache_dir=path.join(cache_folder, "youtube")
-                ),
-            )
-            return YoutubeExtractor(api_config=api_config)
+    extractors = {
+        SocialNetwork.INSTAGRAM: InstagramExtractor,
+        SocialNetwork.TIKTOK: TiktokExtractor,
+        SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(cache_folder),
+    }
+    return extractors[social_network]()
+
+
+def create_youtube_extractor(cache_folder: str) -> YoutubeExtractor:
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    if not api_key:
+        raise Exception("YOUTUBE_API_KEY environment variable is required")
+    api_config = YoutubeApiConfig(
+        api_key=api_key,
+        cache_config=DiskCacheConfig(cache_dir=path.join(cache_folder, "youtube")),
+    )
+    return YoutubeExtractor(api_config=api_config)
 
 
 @dataclass
