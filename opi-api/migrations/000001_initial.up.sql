@@ -80,6 +80,6 @@ CREATE TABLE "v1"."extraction_task" (
     "config" JSON,
     "social_network" TEXT NOT NULL,
     "status" TEXT NOT NULL,
-    "visible_at" timestamptz,
+    "visible_until" timestamptz,
     "error" TEXT
 );
