@@ -70,7 +70,9 @@ async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> None
             raise e
 
 
-async def register_tasks(extraction_tasks: list[ExtractionTask]) -> list[ExtractionTask]:
+async def register_tasks(
+    extraction_tasks: list[ExtractionTask],
+) -> list[ExtractionTask]:
     register_tasks = """
         INSERT INTO v1.extraction_task (
             social_network

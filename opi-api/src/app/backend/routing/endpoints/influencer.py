@@ -27,8 +27,7 @@ async def get_influencer_accounts(
             )
         except TypeError as e:
             raise HTTPException(
-                status_code=404,
-                detail=f"Influencer {username} not found"
+                status_code=404, detail=f"Influencer {username} not found"
             ) from e
         except Exception as e:
             LOGGER.exception(f"Error fetching influencer account {username}")

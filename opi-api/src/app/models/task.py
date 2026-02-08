@@ -23,9 +23,11 @@ class ExtractAccountTaskConfig(pydantic.BaseModel):
     # FIXME this should be an account id rather than a handle
     account_id: str
 
+
 ExtractionTaskConfig = Union[
     ExtractPostDetailsTaskConfig, ExtractPostListTaskConfig, ExtractAccountTaskConfig
 ]
+
 
 class ExtractionTaskType(StrEnum):
     EXTRACT_ACCOUNT = "extract-account"
