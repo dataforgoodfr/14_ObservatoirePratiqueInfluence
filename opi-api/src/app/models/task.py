@@ -48,14 +48,14 @@ class ExtractionTask(pydantic.BaseModel):
     type: ExtractionTaskType
     task_config: ExtractionTaskConfig
     status: Optional[ExtractionTaskStatus] = None
-    visible_until: Optional[pydantic.AwareDatetime] = None
+    visible_at: Optional[pydantic.AwareDatetime] = None
     error: Optional[str] = None
 
 
 class ExtractionTaskResponse(pydantic.BaseModel):
     task_uid: Optional[uuid.UUID] = None
     social_network: Optional[SocialNetwork] = None
-    visible_until: Optional[pydantic.AwareDatetime] = None
+    visible_at: Optional[pydantic.AwareDatetime] = None
     type: Optional[ExtractionTaskType] = None
     task_config: Optional[ExtractionTaskConfig] = None
     error: Optional[str] = None

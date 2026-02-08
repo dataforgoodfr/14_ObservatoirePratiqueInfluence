@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 async def acquire_available_task() -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
-        SET status = 'ACQUIRED', visible_until = NOW() + INTERVAL '15 minutes'
+        SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '15 minutes'
         WHERE uid = (
             SELECT uid
             FROM v1.extraction_task
@@ -26,8 +26,7 @@ async def acquire_available_task() -> ExtractionTaskResponse:
             , social_network
             , type
             , config
-            , visible_until
-            , error
+            , visible_at
         ;
     """
 
@@ -41,7 +40,7 @@ async def acquire_available_task() -> ExtractionTaskResponse:
                     social_network=row[1],
                     type=row[2],
                     task_config=json.loads(row[3]),
-                    visible_until=row[4],
+                    visible_at=row[4],
                 )
             else:
                 return ExtractionTaskResponse(error="no-task-available")
@@ -54,9 +53,9 @@ async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> None
     update_task = """
         UPDATE v1.extraction_task
         SET status = $2
-            , visible_until = NULL
+            , visible_at = NULL
         WHERE uid = $1
-            AND visible_until > NOW()
+            AND visible_at > NOW()
         ;
     """
 
@@ -94,7 +93,7 @@ async def register_tasks(
             , config
             , social_network
             , status
-            , visible_until
+            , visible_at
             , error
     """
 
@@ -123,7 +122,7 @@ async def register_tasks(
                     task_config=json.loads(row[3]),
                     social_network=row[4],
                     status=row[5],
-                    visible_until=row[6],
+                    visible_at=row[6],
                     error=row[7],
                 )
                 for row in rows
