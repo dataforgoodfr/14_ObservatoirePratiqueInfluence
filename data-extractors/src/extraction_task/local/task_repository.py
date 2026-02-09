@@ -67,7 +67,7 @@ class TaskRepository:
         return next_task
 
     def replace_all(self, tasks: List[ExtractionTask]) -> None:
-        self._write_tasks(tasks, replace=False)
+        self._write_tasks(tasks, replace=True)
 
     def append_all(self, tasks: List[ExtractionTask]) -> None:
         self._write_tasks(tasks, replace=False)
