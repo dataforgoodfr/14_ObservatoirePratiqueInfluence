@@ -8,13 +8,13 @@ from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
+from extraction_task.local.account_repository import AccountRepository
 from extraction_task.local.local_extraction_task_service import (
     LocalExtractionTaskService,
 )
+from extraction_task.local.post_repository import PostRepository
 from extraction_task.local.task_repository import TaskRepository
-from extraction_task.local.task_result_repository import (
-    TaskResultRepository,
-)
+
 from task_processing_loop import TaskProcessingLoop
 
 from data_extractors.data_extractor import DataExtractor
@@ -124,9 +124,12 @@ def main() -> None:
     logging.info("config: %s", config)
 
     task_repository = TaskRepository(config.task_file)
-    result_repository = TaskResultRepository(config.result_folder)
+    account_repository = AccountRepository(
+        path.join(config.result_folder, "accounts.csv")
+    )
+    post_repository = PostRepository(path.join(config.result_folder, "posts.csv"))
     task_service: ExtractionTaskService = LocalExtractionTaskService(
-        task_repository, result_repository
+        task_repository, account_repository, post_repository
     )
 
     extractor = create_extractor(
