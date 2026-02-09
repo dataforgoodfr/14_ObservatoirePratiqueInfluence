@@ -5,6 +5,7 @@ from typing import Union
 
 class AccountExtractionResult(BaseModel):
     data_extraction_date: AwareDatetime
+    handle: str | None
     description: str
     follower_count: int
     following_count: int

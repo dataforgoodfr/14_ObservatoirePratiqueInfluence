@@ -8,6 +8,7 @@ class Account(BaseModel):
     social_network: social_network.SocialNetwork
     account_id: str
     account_extraction_date: AwareDatetime
+    handle: str | None
     description: str
     follower_count: int
     following_count: int

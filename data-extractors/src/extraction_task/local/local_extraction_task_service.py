@@ -96,6 +96,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
                 Account(
                     social_network=task.social_network,
                     account_id=task.task_config.account_id,
+                    handle=task_result.handle,
                     account_extraction_date=task_result.data_extraction_date,
                     description=task_result.description,
                     follower_count=task_result.follower_count,

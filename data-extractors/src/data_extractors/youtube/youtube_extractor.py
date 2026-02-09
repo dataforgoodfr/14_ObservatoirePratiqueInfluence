@@ -36,6 +36,7 @@ class YoutubeExtractor(DataExtractor):
 
             return AccountExtractionResult(
                 data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+                handle=channel.custom_url,
                 description=channel.description,
                 follower_count=channel.subscriber_count,
                 following_count=0,  # YouTube doesn't have following concept
