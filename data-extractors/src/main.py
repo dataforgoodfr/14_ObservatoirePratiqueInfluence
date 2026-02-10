@@ -1,113 +1,18 @@
 import argparse
-from dataclasses import dataclass
+import datetime
 import logging
 from os import path
-import os
-from data_extractors.instagram.instagram_extractor import InstagramExtractor
-from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
-from data_extractors.youtube.disk_cache import DiskCacheConfig
-from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
-from data_extractors.youtube.youtube_extractor import YoutubeExtractor
-from extraction_task.local.account_repository import AccountRepository
-from extraction_task.local.local_extraction_task_service import (
-    LocalExtractionTaskService,
-)
-from extraction_task.local.post_repository import PostRepository
-from extraction_task.local.task_repository import TaskRepository
 
-from task_processing_loop import TaskProcessingLoop
+from run_extract import ExtractConfig, run_extract
 
-from data_extractors.data_extractor import DataExtractor
-from extraction_task.extraction_task_service import (
-    ExtractionTaskService,
-)
 from extraction_task.social_network import SocialNetwork
 
-
-def create_extractor(social_network: SocialNetwork, cache_folder: str) -> DataExtractor:
-    extractors = {
-        SocialNetwork.INSTAGRAM: InstagramExtractor,
-        SocialNetwork.TIKTOK: TiktokExtractor,
-        SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(cache_folder),
-    }
-    return extractors[social_network]()
+from run_generate_task import GenerateTaskConfig, run_generate_task
 
 
-def create_youtube_extractor(cache_folder: str) -> YoutubeExtractor:
-    api_key = os.getenv("YOUTUBE_API_KEY")
-    if not api_key:
-        raise Exception("YOUTUBE_API_KEY environment variable is required")
-    api_config = YoutubeApiConfig(
-        api_key=api_key,
-        cache_config=DiskCacheConfig(cache_dir=path.join(cache_folder, "youtube")),
-    )
-    return YoutubeExtractor(api_config=api_config)
-
-
-@dataclass
-class Config:
-    social_network: SocialNetwork
-    task_polling_interval: int
-    task_file: str
-    result_folder: str
-    cache_folder: str
-
-
-def parse_arguments() -> Config:
-    parser = argparse.ArgumentParser(
-        prog="data_extractors",
-    )
-
-    parser.add_argument(
-        "-n",
-        "--social-network",
-        help="Social Network",
-        type=SocialNetwork,
-        dest="social_network",
-        choices=list(SocialNetwork),
-        default=SocialNetwork.YOUTUBE,
-    )
-
-    parser.add_argument(
-        "-p",
-        "--polling-interval",
-        dest="task_polling_interval",
-        help="Task polling interval seconds",
-        type=int,
-        default=10,
-    )
-
-    parser.add_argument(
-        "-i",
-        "--task-file",
-        dest="task_file",
-        help="Task csv file",
-        default=path.join("data", "extraction_tasks.csv"),
-    )
-    parser.add_argument(
-        "-o",
-        "--result-folder",
-        dest="result_folder",
-        help="Result folder",
-        default=path.join("data", "results"),
-    )
-
-    parser.add_argument(
-        "-c",
-        "--cache-folder",
-        dest="cache_folder",
-        help="Cache folder",
-        default=path.join("data", ".cache"),
-    )
-
-    result = parser.parse_args()
-
-    return Config(
-        social_network=result.social_network,
-        task_polling_interval=result.task_polling_interval,
-        task_file=result.task_file,
-        result_folder=result.result_folder,
-        cache_folder=result.cache_folder,
+def parse_date(date_str: str) -> datetime.datetime:
+    return datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(
+        tzinfo=datetime.timezone.utc
     )
 
 
@@ -119,31 +24,131 @@ def main() -> None:
             logging.StreamHandler(),
         ],
     )
-    config = parse_arguments()
 
-    logging.info("config: %s", config)
-
-    task_repository = TaskRepository(config.task_file)
-    account_repository = AccountRepository(
-        path.join(config.result_folder, "accounts.csv")
-    )
-    post_repository = PostRepository(path.join(config.result_folder, "posts.csv"))
-    task_service: ExtractionTaskService = LocalExtractionTaskService(
-        task_repository, account_repository, post_repository
+    parser = argparse.ArgumentParser(
+        prog="data_extractors",
+        description="Social network data extraction tool",
     )
 
-    extractor = create_extractor(
-        config.social_network, cache_folder=config.cache_folder
+    subparsers = parser.add_subparsers(dest="action", help="Available actions")
+
+    # Add extract subcommand
+    extract_parser = subparsers.add_parser(
+        "extract", help="Extract data from social networks"
+    )
+    # Add extract arguments to the subparser
+    extract_parser.add_argument(
+        "-n",
+        "--social-network",
+        help="Social Network",
+        type=SocialNetwork,
+        dest="social_network",
+        choices=list(SocialNetwork),
+        default=SocialNetwork.YOUTUBE,
+    )
+    extract_parser.add_argument(
+        "-p",
+        "--polling-interval",
+        dest="task_polling_interval",
+        help="Task polling interval seconds",
+        type=int,
+        default=10,
+    )
+    extract_parser.add_argument(
+        "-i",
+        "--tasks-file",
+        dest="tasks_file",
+        help="Task csv file",
+        default=path.join("data", "extraction_tasks.csv"),
+    )
+    extract_parser.add_argument(
+        "-o",
+        "--result-folder",
+        dest="result_folder",
+        help="Result folder",
+        default=path.join("data", "results"),
+    )
+    extract_parser.add_argument(
+        "-c",
+        "--cache-folder",
+        dest="cache_folder",
+        help="Cache folder",
+        default=path.join("data", ".cache"),
     )
 
-    loop = TaskProcessingLoop(
-        social_network=config.social_network,
-        task_repository=task_service,
-        extractor=extractor,
-        polling_interval=config.task_polling_interval,
+    # Add generate-task subcommand
+    generate_task_parser = subparsers.add_parser(
+        "generate-task", help="Generate extraction tasks from account URLs"
+    )
+    generate_task_parser.add_argument(
+        "--task-type",
+        choices=["all", "account", "post-list"],
+        default="all",
+        dest="task_type",
+        help="Which task types to generate (default: all)",
+    )
+    generate_task_parser.add_argument(
+        "--published-after",
+        type=str,
+        default="2025-01-01",
+        dest="published_after",
+        help="Start date for post list extraction in YYYY-MM-DD format (default: 2025-01-01)",
+    )
+    generate_task_parser.add_argument(
+        "--published-before",
+        type=str,
+        default="2026-01-01",
+        dest="published_before",
+        help="End date for post list extraction in YYYY-MM-DD format (default: 2026-01-01)",
+    )
+    generate_task_parser.add_argument(
+        "--mode",
+        choices=["replace", "append"],
+        default="replace",
+        dest="mode",
+        help="Whether to replace existing tasks or append to them (default: replace)",
+    )
+    generate_task_parser.add_argument(
+        "--urls-file",
+        type=str,
+        default="data/account_urls.csv",
+        dest="urls_file",
+        help="Path to the input CSV file with account URLs (default: data/account_urls.csv)",
+    )
+    generate_task_parser.add_argument(
+        "--tasks-file",
+        type=str,
+        default="data/extraction_tasks.csv",
+        dest="tasks_file",
+        help="Path to the output CSV file for extraction tasks (default: data/extraction_tasks.csv)",
     )
 
-    loop.run()
+    args = parser.parse_args()
+
+    if args.action == "extract":
+        extract_config = ExtractConfig(
+            social_network=args.social_network,
+            task_polling_interval=args.task_polling_interval,
+            tasks_file=args.tasks_file,
+            result_folder=args.result_folder,
+            cache_folder=args.cache_folder,
+        )
+        run_extract(extract_config)
+    elif args.action == "generate-task":
+        published_after = parse_date(args.published_after)
+        published_before = parse_date(args.published_before)
+        replace = args.mode == "replace"
+        generate_task_config = GenerateTaskConfig(
+            task_type=args.task_type,
+            published_after=published_after,
+            published_before=published_before,
+            replace=replace,
+            urls_file=args.urls_file,
+            tasks_file=args.tasks_file,
+        )
+        run_generate_task(generate_task_config)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
