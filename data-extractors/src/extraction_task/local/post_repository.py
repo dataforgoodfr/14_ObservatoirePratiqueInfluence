@@ -21,6 +21,7 @@ class PostDetails(BaseModel):
     social_network: social_network.SocialNetwork
     post_id: str
     post_extraction_date: Optional[AwareDatetime]
+    post_url: Optional[str]
     title: Optional[str]
     description: Optional[str]
     comment_count: Optional[int]

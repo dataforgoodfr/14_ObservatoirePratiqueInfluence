@@ -27,6 +27,7 @@ class PostListExtractionResult(BaseModel):
 
 class PostDetailsExtractionResult(BaseModel):
     data_extraction_date: AwareDatetime
+    post_url: str
     title: str
     description: str
     comment_count: int

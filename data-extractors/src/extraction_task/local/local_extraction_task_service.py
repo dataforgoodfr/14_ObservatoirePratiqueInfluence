@@ -146,6 +146,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
                     social_network=task.social_network,
                     post_id=task.task_config.post_id,
                     post_extraction_date=task_result.data_extraction_date,
+                    post_url=task_result.post_url,
                     title=task_result.title,
                     description=task_result.description,
                     comment_count=task_result.comment_count,
