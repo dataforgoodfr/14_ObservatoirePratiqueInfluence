@@ -11,7 +11,9 @@ import asyncpg
 
 logger = logging.getLogger("uvicorn")
 
-DSN: str = os.getenv("POSTGRES_DSN") or "postgresql://postgres:postgres@localhost:5432/opidb"
+DSN: str = (
+    os.getenv("POSTGRES_DSN") or "postgresql://postgres:postgres@localhost:5432/opidb"
+)
 if "application_name" not in DSN:
     DSN += "&application_name=opi-api"
 

@@ -13,7 +13,7 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./opi-api/app:/opi-api/app
+      - ./opi-api/src/app:/opi-api/.venv/lib/python3.12/site-packages/app
     stdin_open: true
     tty: true
     depends_on:
