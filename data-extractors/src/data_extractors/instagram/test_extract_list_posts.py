@@ -1,5 +1,4 @@
 import datetime
-from itertools import dropwhile, takewhile
 from datetime import timezone
 
 import instaloader
