@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.12.5",
     "requests>=2.32.5",
+    "instaloader>=v4.15"
 ]
 
 [tool.mypy]
