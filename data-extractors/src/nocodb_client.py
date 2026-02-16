@@ -209,7 +209,6 @@ class NocoDBClient:
     def upsert_record(
         self, table_config: TableConfig, csv_record: dict[str, Any]
     ) -> NocoRecord:
-
         table_id = self._get_table_id(table_config.table_name)
 
         # Map fields
@@ -305,7 +304,6 @@ class NocoDBClient:
     def _resolved_target_record_id(
         self, csv_record: dict[str, Any], linked_id_mapping: LinkedIdFieldMapping
     ) -> str | None:
-
         target_logical_id: dict[str, Any] = {}
         for target_table_noco_field, lookup_mapping in linked_id_mapping.lookup.items():
             value = self._map_value(csv_record, lookup_mapping)
@@ -365,7 +363,6 @@ class NocoDBClient:
         return response.get("fields", [])
 
     def _get_link_field_id(self, table_id: str, field_name: str) -> str:
-
         columns = self._get_table_fields(table_id)
         for column in columns:
             if column.get("title") == field_name:

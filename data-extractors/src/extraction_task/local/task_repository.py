@@ -31,7 +31,6 @@ class TaskRepository:
         return None if row is None else self._task_from_csv_row(row)
 
     def upsert(self, task: ExtractionTask) -> None:
-
         self._csv_repository._upsert_row(
             self._make_by_id_predicate(task.id), self._task_to_csv_row(task)
         )

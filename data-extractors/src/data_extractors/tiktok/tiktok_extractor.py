@@ -119,7 +119,7 @@ class TiktokExtractor(DataExtractor):
             tags=post_data.get("channelTags", []),
             categories=post_data.get("diversificationLabels", []),
             sn_has_paid_placement=bool(post_data.get("isAd", False)),
-            sn_brand="",  # youtube does not provide brand info for product placement
+            sn_brand="",  # TODO(Find sample videos where this can be extracted)
             post_type="video",
             text_content="",  # not relevant for video posts
         )

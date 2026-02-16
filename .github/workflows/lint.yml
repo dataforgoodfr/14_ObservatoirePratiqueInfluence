@@ -23,3 +23,7 @@ jobs:
       - run: ruff format $GITHUB_WORKSPACE/opi-api
 
       - run: ruff check --fix $GITHUB_WORKSPACE/opi-api
+
+      - run: ruff format $GITHUB_WORKSPACE/data-extractors
+
+      - run: ruff check --fix $GITHUB_WORKSPACE/data-extractors
