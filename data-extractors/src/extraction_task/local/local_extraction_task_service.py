@@ -1,10 +1,13 @@
 import datetime
 from typing import Optional
 import uuid
-from extraction_task.local.task_repository import TaskRepository
-from extraction_task.local.task_result_repository import (
-    TaskResultRepository,
+from extraction_task.local.account_repository import Account, AccountRepository
+from extraction_task.local.post_repository import (
+    PostDetails,
+    PostListItem,
+    PostRepository,
 )
+from extraction_task.local.task_repository import TaskRepository
 from extraction_task.extraction_task_service import ExtractionTaskService
 from extraction_task.extraction_task import (
     ExtractionTask,
@@ -36,17 +39,22 @@ class LocalExtractionTaskService(ExtractionTaskService):
 
     _task_repository: TaskRepository
 
-    _result_repository: TaskResultRepository
+    _account_repository: AccountRepository
+    _post_repository: PostRepository
+
     _create_post_details_tasks: bool
 
     def __init__(
         self,
         task_repository: TaskRepository,
-        result_repository: TaskResultRepository,
+        account_repository: AccountRepository,
+        post_repository: PostRepository,
         create_post_details_tasks: bool = True,
     ):
         self._task_repository = task_repository
-        self._result_repository = result_repository
+        self._account_repository = account_repository
+        self._post_repository = post_repository
+
         self._create_post_details_tasks = create_post_details_tasks
 
     def acquire_next_task(
@@ -84,20 +92,37 @@ class LocalExtractionTaskService(ExtractionTaskService):
             and isinstance(task_result, AccountExtractionResult)
             and isinstance(task.task_config, ExtractAccountTaskConfig)
         ):
-            self._result_repository.persist_extract_account_result(
-                task.id, task_result, task.task_config
+            self._account_repository.upsertAccount(
+                Account(
+                    social_network=task.social_network,
+                    account_id=task.task_config.account_id,
+                    handle=task_result.handle,
+                    account_extraction_date=task_result.data_extraction_date,
+                    description=task_result.description,
+                    follower_count=task_result.follower_count,
+                    following_count=task_result.following_count,
+                    post_count=task_result.post_count,
+                    view_count=task_result.view_count,
+                    like_count=task_result.like_count,
+                    categories=task_result.categories,
+                )
             )
         elif (
             task.type == ExtractionTaskType.EXTRACT_POST_LIST
             and isinstance(task_result, PostListExtractionResult)
             and isinstance(task.task_config, ExtractPostListTaskConfig)
         ):
-            self._result_repository.persist_extract_post_list_result(
-                task.id, task_result, task.task_config
-            )
-            if self._create_post_details_tasks:
-                # create post detail
-                for post in task_result.posts:
+            for post in task_result.posts:
+                self._post_repository.upsert_post_list_item(
+                    PostListItem(
+                        social_network=task.social_network,
+                        post_id=post.post_id,
+                        account_id=task.task_config.account_id,
+                    )
+                )
+
+                if self._create_post_details_tasks:
+                    # create post detail
                     self._task_repository.upsert(
                         ExtractionTask(
                             id=uuid.uuid4(),
@@ -116,8 +141,26 @@ class LocalExtractionTaskService(ExtractionTaskService):
             and isinstance(task_result, PostDetailsExtractionResult)
             and isinstance(task.task_config, ExtractPostDetailsTaskConfig)
         ):
-            self._result_repository.persist_extract_post_details_result(
-                task.id, task_result, task.task_config
+            self._post_repository.upsert_post_details(
+                PostDetails(
+                    social_network=task.social_network,
+                    post_id=task.task_config.post_id,
+                    post_extraction_date=task_result.data_extraction_date,
+                    post_url=task_result.post_url,
+                    title=task_result.title,
+                    description=task_result.description,
+                    comment_count=task_result.comment_count,
+                    view_count=task_result.view_count,
+                    repost_count=task_result.repost_count,
+                    like_count=task_result.like_count,
+                    share_count=task_result.share_count,
+                    categories=task_result.categories,
+                    tags=task_result.tags,
+                    sn_has_paid_placement=task_result.sn_has_paid_placement,
+                    sn_brand=task_result.sn_brand,
+                    post_type=task_result.post_type,
+                    text_content=task_result.text_content,
+                )
             )
         else:
             raise Exception("Unexpected result")
@@ -130,7 +173,9 @@ class LocalExtractionTaskService(ExtractionTaskService):
             raise Exception("Task does not exist")
 
         if not task.is_acquired_and_current():
-            raise Exception("Task is not acquired or acquisition timedout")
+            raise Exception(
+                f"Task is not acquired or acquisition timed out - status:{task.status}, visible_at:{task.visible_at}"
+            )
 
         task.status = ExtractionTaskStatus.FAILED
         task.error = task_error

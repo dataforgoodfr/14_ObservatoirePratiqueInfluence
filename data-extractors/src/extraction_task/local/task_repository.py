@@ -5,90 +5,60 @@ from extraction_task.extraction_task import (
 )
 
 
-import csv
 import json
-import os
-from os import path
-from typing import Dict, List, Optional
+from typing import Callable, List, Optional
 
 from extraction_task.extraction_task_config import (
     ExtractAccountTaskConfig,
     ExtractPostDetailsTaskConfig,
     ExtractPostListTaskConfig,
 )
+from extraction_task.local.csv_repository import CsvRowRepository
 from extraction_task.social_network import SocialNetwork
 
 
 class TaskRepository:
-    _csv_file: str
+    _csv_repository: CsvRowRepository
 
     def __init__(self, tasks_csv_file: str):
-        self._csv_file = tasks_csv_file
-        self._init_csv_file_if_missing()
-
-    def _init_csv_file_if_missing(self) -> None:
-        if not path.exists(self._csv_file):
-            os.makedirs(path.dirname(self._csv_file), exist_ok=True)
-            with open(self._csv_file, "w") as f:
-                w = csv.DictWriter(f, ExtractionTask.__annotations__.keys())
-                w.writeheader()
+        self._csv_repository = CsvRowRepository(
+            tasks_csv_file, list(ExtractionTask.model_fields.keys())
+        )
 
     def find_by_id(self, id: UUID) -> Optional[ExtractionTask]:
-        tasks = self.list_all()
-        return next((t for t in tasks if t.id == id), None)
+        row = self._csv_repository._find_row(self._make_by_id_predicate(id))
+
+        return None if row is None else self._task_from_csv_row(row)
 
     def upsert(self, task: ExtractionTask) -> None:
-        tasks = self.list_all()
 
-        taskIndex: Optional[int] = next(
-            (i for i, a in enumerate(tasks) if a.id == task.id),
-            None,
+        self._csv_repository._upsert_row(
+            self._make_by_id_predicate(task.id), self._task_to_csv_row(task)
         )
-        if taskIndex is None:
-            tasks.append(task)
-        else:
-            tasks[taskIndex] = task
-
-        self.replace_all(tasks)
 
     def get_first_acquirable_task(
         self, social_network: SocialNetwork
     ) -> Optional[ExtractionTask]:
-        tasks = self.list_all()
+        def acquirable_predicate(csv_row: dict) -> bool:
+            t = self._task_from_csv_row(csv_row)
+            return t.social_network == social_network and t.is_acquirable()
 
-        next_task: Optional[ExtractionTask] = next(
-            (
-                t
-                for t in tasks
-                if t.social_network == social_network and t.is_acquirable()
-            ),
-            None,
-        )
-        return next_task
+        row = self._csv_repository._find_row(acquirable_predicate)
+        return None if row is None else self._task_from_csv_row(row)
 
     def replace_all(self, tasks: List[ExtractionTask]) -> None:
-        self._write_tasks(tasks, replace=False)
+        self._csv_repository._replace_all_rows(
+            [self._task_to_csv_row(t) for t in tasks]
+        )
 
     def append_all(self, tasks: List[ExtractionTask]) -> None:
-        self._write_tasks(tasks, replace=False)
-
-    def _write_tasks(self, tasks: List[ExtractionTask], replace: bool) -> None:
-        with open(self._csv_file, "w" if replace else "a") as f:
-            w = csv.DictWriter(f, ExtractionTask.__annotations__.keys())
-            if replace:
-                w.writeheader()
-            csv_rows = [self.__to_csv_dict(task) for task in tasks]
-            w.writerows(csv_rows)
+        self._csv_repository._append_rows([self._task_to_csv_row(t) for t in tasks])
 
     def list_all(self) -> List[ExtractionTask]:
-        with open(self._csv_file) as f:
-            reader = csv.DictReader(f)
-            rows_with_parsed_config = [self.__from_csv_dict(row) for row in reader]
-            return [
-                ExtractionTask.model_validate(row) for row in rows_with_parsed_config
-            ]
+        rows = self._csv_repository._list_all_rows()
+        return [self._task_from_csv_row(r) for r in rows]
 
-    def __from_csv_dict(self, csv_row: Dict) -> ExtractionTask:
+    def _task_from_csv_row(self, csv_row: dict) -> ExtractionTask:
         type: ExtractionTaskType = csv_row["type"]
         if type == ExtractionTaskType.EXTRACT_ACCOUNT:
             redict = ExtractAccountTaskConfig.model_validate_json(
@@ -110,8 +80,14 @@ class TaskRepository:
 
         return ExtractionTask.model_validate(csv_row)
 
-    def __to_csv_dict(self, task: ExtractionTask) -> Dict:
+    def _task_to_csv_row(self, task: ExtractionTask) -> dict:
         dict = task.model_dump()
         json_task_config = json.dumps(task.task_config.model_dump(mode="json"))
         dict["task_config"] = json_task_config
         return dict
+
+    def _make_by_id_predicate(self, id: UUID) -> Callable[[dict], bool]:
+        def match_by_id(csv_row: dict) -> bool:
+            return self._task_from_csv_row(csv_row).id == id
+
+        return match_by_id

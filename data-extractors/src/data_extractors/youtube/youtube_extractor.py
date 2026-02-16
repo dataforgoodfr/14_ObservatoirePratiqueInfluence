@@ -14,7 +14,7 @@ from extraction_task.extraction_task_result import (
 import datetime
 import logging
 
-from .youtube_api_client import Channel, YoutubeApiClient
+from .youtube_api_client import Channel, YoutubeApiClient, post_url
 from .youtube_api_config import YoutubeApiConfig
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class YoutubeExtractor(DataExtractor):
 
             return AccountExtractionResult(
                 data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+                handle=channel.custom_url,
                 description=channel.description,
                 follower_count=channel.subscriber_count,
                 following_count=0,  # YouTube doesn't have following concept
@@ -110,6 +111,7 @@ class YoutubeExtractor(DataExtractor):
 
             return PostDetailsExtractionResult(
                 data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+                post_url=post_url(video.id, video.post_type),
                 title=video.title,
                 description=video.description,
                 comment_count=int(video.comment_count) if video.comment_count else 0,
@@ -121,7 +123,7 @@ class YoutubeExtractor(DataExtractor):
                 categories=video.topic_categories,
                 sn_has_paid_placement=video.has_paid_placement,
                 sn_brand="",  # youtube does not provide brand info for product placement
-                post_type=str(video.post_type),
+                post_type="video",
                 text_content="",  # not relevant for video posts
             )
         except Exception as e:
