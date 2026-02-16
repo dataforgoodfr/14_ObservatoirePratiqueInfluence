@@ -3,11 +3,15 @@ import datetime
 import logging
 from os import path
 
+from dotenv import load_dotenv
+
 from run_extract import ExtractConfig, run_extract
 
 from extraction_task.social_network import SocialNetwork
 
 from run_generate_task import GenerateTaskConfig, run_generate_task
+
+from run_upload_to_noco import UploadToNocoConfig, run_upload_to_noco
 
 
 def parse_date(date_str: str) -> datetime.datetime:
@@ -17,6 +21,7 @@ def parse_date(date_str: str) -> datetime.datetime:
 
 
 def main() -> None:
+    load_dotenv()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -123,6 +128,19 @@ def main() -> None:
         help="Path to the output CSV file for extraction tasks (default: data/extraction_tasks.csv)",
     )
 
+    # Add upload-results subcommand
+    upload_parser = subparsers.add_parser(
+        "upload-results", help="Upload results to NocoDB"
+    )
+
+    upload_parser.add_argument(
+        "-r",
+        "--result-folder",
+        dest="result_folder",
+        help="Result folder containing CSV files",
+        default=path.join("data", "results"),
+    )
+
     args = parser.parse_args()
 
     if args.action == "extract":
@@ -147,6 +165,13 @@ def main() -> None:
             tasks_file=args.tasks_file,
         )
         run_generate_task(generate_task_config)
+    elif args.action == "upload-results":
+        upload_config = UploadToNocoConfig(
+            result_folder=args.result_folder,
+            accounts_csv=path.join(args.result_folder, "accounts.csv"),
+            posts_csv=path.join(args.result_folder, "posts.csv"),
+        )
+        run_upload_to_noco(upload_config)
     else:
         parser.print_help()
 
