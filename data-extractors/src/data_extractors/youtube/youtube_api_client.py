@@ -266,7 +266,6 @@ class YoutubeApiClient:
         endpoint: str,
         params: dict[str, Any],
     ) -> dict[str, Any]:
-
         url = f"{self.config.base_url}/{endpoint}"
         params["key"] = self.config.api_key
 

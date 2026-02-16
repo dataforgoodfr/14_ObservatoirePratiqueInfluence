@@ -57,7 +57,7 @@ def extract_network_and_account_id(url: str) -> tuple[SocialNetwork, str]:
         account_id = path_fragments[-1]
         return (SocialNetwork.YOUTUBE, account_id)
     if netloc == "www.tiktok.com":
-        account_id = path_fragments[-1]
+        account_id = path_fragments[-1].strip("@")  # Remove leading @
         return (SocialNetwork.TIKTOK, account_id)
     else:
         raise Exception("unmatched url" + url)
