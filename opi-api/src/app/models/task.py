@@ -1,41 +1,43 @@
-from enum import StrEnum
+"""Extraction task models."""
 
 import uuid
+from enum import StrEnum
 
 import pydantic
-
-from typing import Optional, Union
 
 from app.models.socialnetwork import SocialNetwork
 
 
-class ExtractPostDetailsTaskConfig(pydantic.BaseModel):
+class _ExtractPostDetailsTaskConfig(pydantic.BaseModel):
     post_id: str
 
 
-class ExtractPostListTaskConfig(pydantic.BaseModel):
+class _ExtractPostListTaskConfig(pydantic.BaseModel):
     account_id: str
     published_after: pydantic.AwareDatetime
     published_before: pydantic.AwareDatetime
 
 
-class ExtractAccountTaskConfig(pydantic.BaseModel):
-    # FIXME this should be an account id rather than a handle
+class _ExtractAccountTaskConfig(pydantic.BaseModel):
     account_id: str
 
 
-ExtractionTaskConfig = Union[
-    ExtractPostDetailsTaskConfig, ExtractPostListTaskConfig, ExtractAccountTaskConfig
-]
+ExtractionTaskConfig = (
+    _ExtractPostDetailsTaskConfig | _ExtractPostListTaskConfig | _ExtractAccountTaskConfig
+)
 
 
 class ExtractionTaskType(StrEnum):
+    """Types of extraction tasks."""
+
     EXTRACT_ACCOUNT = "extract-account"
     EXTRACT_POST_LIST = "extract-post-list"
     EXTRACT_POST_DETAILS = "extract-post-details"
 
 
 class ExtractionTaskStatus(StrEnum):
+    """Available task statuses."""
+
     AVAILABLE = "AVAILABLE"
     ACQUIRED = "ACQUIRED"
     COMPLETED = "COMPLETED"
@@ -43,19 +45,23 @@ class ExtractionTaskStatus(StrEnum):
 
 
 class ExtractionTask(pydantic.BaseModel):
-    uid: Optional[uuid.UUID] = None
+    """Extraction task models."""
+
+    uid: uuid.UUID | None = None
     social_network: SocialNetwork
     type: ExtractionTaskType
     task_config: ExtractionTaskConfig
-    status: Optional[ExtractionTaskStatus] = None
-    visible_at: Optional[pydantic.AwareDatetime] = None
-    error: Optional[str] = None
+    status: ExtractionTaskStatus | None = None
+    visible_at: pydantic.AwareDatetime | None = None
+    error: str | None = None
 
 
 class ExtractionTaskResponse(pydantic.BaseModel):
-    task_uid: Optional[uuid.UUID] = None
-    social_network: Optional[SocialNetwork] = None
-    visible_at: Optional[pydantic.AwareDatetime] = None
-    type: Optional[ExtractionTaskType] = None
-    task_config: Optional[ExtractionTaskConfig] = None
-    error: Optional[str] = None
+    """Extraction task response model."""
+
+    task_uid: uuid.UUID | None = None
+    social_network: SocialNetwork | None = None
+    visible_at: pydantic.AwareDatetime | None = None
+    type: ExtractionTaskType | None = None
+    task_config: ExtractionTaskConfig | None = None
+    error: str | None = None

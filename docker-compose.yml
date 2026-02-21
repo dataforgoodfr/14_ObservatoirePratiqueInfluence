@@ -8,6 +8,11 @@ services:
       - HOST=0.0.0.0
       - RELOAD=true
       - PORT=8000
+      - NOCODB_URL=http://nocodb:8080
+      - NOCODB_API_TOKEN=dummy
+      - NOCODB_BASE_ID=dummy
+      - NOCODB_ACCOUNT_TABLE=dummy
+      - NOCODB_POST_TABLE=dummy
     ports:
       - "8000:8000"
     expose:
