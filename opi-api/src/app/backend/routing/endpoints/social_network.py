@@ -11,7 +11,7 @@ async def upsert_posts(posts: list[Post]) -> Response:
     client = NocoDBClient()
     for post in posts:
         client.upsert_record(
-            "post",
+            settings.nocodb_post_table,
             {
                 "Account": {
                     "target_table": settings.nocodb_account_table,
@@ -47,7 +47,7 @@ async def upsert_accounts(accounts: list[Account]) -> Response:
     client = NocoDBClient()
     for account in accounts:
         client.upsert_record(
-            "account",
+            settings.nocodb_account_table,
             {},
             {
                 "Social Network": account.social_network,
@@ -56,7 +56,7 @@ async def upsert_accounts(accounts: list[Account]) -> Response:
             {
                 "Social Network": account.social_network,
                 "Account Id": account.account_id,
-                "Account Extraction Date": account.account_extracted_at,
+                "Account Extraction Date": account.account_extracted_at.isoformat(),
                 "Handle": account.handle,
                 "Description": account.description,
                 "Follower Count": account.follower_count,

@@ -1,6 +1,7 @@
 """Social network models."""
 
 from enum import StrEnum
+from typing import Annotated
 
 import pydantic
 
@@ -23,7 +24,9 @@ class Influencer(pydantic.BaseModel):
 class Account(pydantic.BaseModel):
     """Account model."""
 
-    account_extracted_at: pydantic.AwareDatetime
+    account_extracted_at: Annotated[
+        pydantic.AwareDatetime, pydantic.PlainSerializer(lambda d: d.isoformat())
+    ]
     account_id: str
     social_network: str
     handle: str | None
@@ -39,7 +42,9 @@ class Account(pydantic.BaseModel):
 class Post(pydantic.BaseModel):
     """Post model."""
 
-    post_extracted_at: pydantic.AwareDatetime
+    post_extracted_at: Annotated[
+        pydantic.AwareDatetime, pydantic.PlainSerializer(lambda d: d.isoformat())
+    ]
     social_network: str
     account_id: str
     post_id: str

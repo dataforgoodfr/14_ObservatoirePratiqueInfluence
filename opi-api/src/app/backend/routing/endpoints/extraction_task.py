@@ -48,7 +48,7 @@ async def acquire_available_task() -> ExtractionTaskResponse:
             raise
 
 
-async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> None:
+async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> fastapi.Response:
     update_task = """
         UPDATE v1.extraction_task
         SET status = $2

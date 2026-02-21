@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any, TypedDict
+from urllib.parse import quote
 
 import requests
 
@@ -18,6 +19,10 @@ class NocoRecord(TypedDict):
 
 
 class TableNotFoundError(Exception):
+    """Exception raised when no table is found."""
+
+
+class FieldNotFoundError(Exception):
     """Exception raised when no table is found."""
 
 
@@ -43,7 +48,7 @@ class NocoDBClient:
 
         """
         return {
-            "xc-token": self.config.api_token,
+            "xc-token": settings.nocodb_api_token,
             "Content-Type": "application/json",
         }
 
@@ -77,7 +82,7 @@ class NocoDBClient:
             response.raise_for_status()
             return response.json()
         except requests.RequestException:
-            LOGGER.exception("Nocodb Request failed")
+            LOGGER.exception("Nocodb Request failed {response.text}")
             raise
 
     def get_tables(self) -> list[dict[str, Any]]:
@@ -89,7 +94,7 @@ class NocoDBClient:
         """
         response = self._make_request(
             "GET",
-            f"/meta/bases/{self.config.base_id}/tables",
+            f"/meta/bases/{settings.nocodb_base_id}/tables",
         )
         return response.get("list", [])
 
@@ -175,12 +180,12 @@ class NocoDBClient:
         logical_id: dict[str, Any],
     ) -> NocoRecord | None:
         table_id = self._get_table_id(noco_table)
-        where = "~and".join([f"(\"{k}\", eq, '{v}')" for k, v in logical_id.items()])
+        where = "~and".join([f"(\"{k}\", eq, '{quote(v)}')" for k, v in logical_id.items()])
         params: dict[str, Any] = {"where": where}
 
         response = self._make_request(
             "GET",
-            f"/data/{self.config.base_id}/{table_id}/records",
+            f"/data/{settings.nocodb_base_id}/{table_id}/records",
             params=params,
         )
         records = response.get("records", [])
@@ -190,6 +195,53 @@ class NocoDBClient:
             record_dict = records[0]
             return NocoRecord(id=record_dict["id"], fields=record_dict)
         return None
+
+    def _get_table_fields(self, table_id: str) -> list[dict[str, Any]]:
+        """Get all columns for a table.
+
+        Args:
+            table_id: Table ID
+
+        Returns:
+            List of fields
+
+        """
+        response = self._make_request(
+            "GET", f"/meta/bases/{settings.nocodb_base_id}/tables/{table_id}"
+        )
+        return response.get("fields", [])
+
+    def _get_link_field_id(self, table_id: str, field_name: str) -> str:
+        columns = self._get_table_fields(table_id)
+        for column in columns:
+            if column.get("title") == field_name:
+                return column["id"]
+
+        message = f"Link field '{field_name}' not found in table"
+        raise FieldNotFoundError(message)
+
+    def link_record(
+        self,
+        from_table_id: str,
+        link_field_id: str,
+        from_record_id: str,
+        target_record_id: str,
+    ) -> None:
+        """Link a record to another record via a link field.
+
+        Args:
+            from_table_id: Source table ID
+            from_record_id: Source record ID
+            link_field_id: Link field ID
+            target_record_id: Target record ID to link to
+
+        """
+        data = {"id": target_record_id}
+        endpoint = (
+            f"/data/{settings.nocodb_base_id}/{from_table_id}/links/"
+            f"{link_field_id}/{from_record_id}/"
+        )
+        self._make_request("POST", endpoint, json=data)
 
     def upsert_record(
         self,
@@ -216,7 +268,9 @@ class NocoDBClient:
 
         for field_name, mapping in linked_field_mappings.items():
             link_field_id = self._get_link_field_id(table_id, field_name)
-            target_record_id = self._resolved_target_record_id(record, mapping)
+            target_record_id = self._find_record_id_by_logical_id(
+                mapping["target_table"], mapping["lookup"]
+            )
             if target_record_id:
                 self.link_record(
                     from_table_id=table_id,
