@@ -2,9 +2,9 @@ import http
 
 from fastapi import Response
 
+from app._config import settings
 from app.models import Account, Post
 from app.nocodb import NocoDBClient
-from app.config import settings
 
 
 async def upsert_posts(posts: list[Post]) -> Response:
@@ -19,7 +19,7 @@ async def upsert_posts(posts: list[Post]) -> Response:
                         "Social Network": post.social_network,
                         "Account Id": post.account_id,
                     },
-                }
+                },
             },
             {"Post Id": post.post_id},
             {

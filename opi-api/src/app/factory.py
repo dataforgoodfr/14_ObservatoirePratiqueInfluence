@@ -1,10 +1,13 @@
-from fastapi import FastAPI, APIRouter
+"""Factory fro OPI API."""
 
-from app.backend.routing import router
+from fastapi import APIRouter, FastAPI
+
 from app.backend.ping import router as ping_router
+from app.backend.routing import router
 
 
 def create_app() -> FastAPI:
+    """Create Fastapi app an inistialize routers."""
     app = FastAPI(title="Observatoire pratique influence API")
 
     main_router = APIRouter()
@@ -13,11 +16,6 @@ def create_app() -> FastAPI:
     app.include_router(ping_router)
 
     return app
-
-
-# @app.get("/health")
-# def health_check() -> dict[str, str]:
-#     return {"status": "healthy"}
 
 
 app = create_app()

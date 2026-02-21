@@ -1,12 +1,12 @@
-import fastapi
+import json
 import logging
 import uuid
-import json
-
 from http import HTTPStatus
 
-from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskStatus
+import fastapi
+
 from app.db import pool
+from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskStatus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,11 +42,10 @@ async def acquire_available_task() -> ExtractionTaskResponse:
                     task_config=json.loads(row[3]),
                     visible_at=row[4],
                 )
-            else:
-                return ExtractionTaskResponse(error="no-task-available")
-        except Exception as e:
+            return ExtractionTaskResponse(error="no-task-available")
+        except Exception:
             LOGGER.exception("Error getting task")
-            raise e
+            raise
 
 
 async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> None:
@@ -64,9 +63,10 @@ async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> None
             await conn.execute(update_task, task_uid, status)
             return fastapi.Response(status_code=HTTPStatus.NO_CONTENT)
 
-        except Exception as e:
-            LOGGER.exception(f"Error updating task {task_uid}")
-            raise e
+        except Exception:
+            message = f"Error updating task {task_uid}"
+            LOGGER.exception(message)
+            raise
 
 
 async def register_tasks(
@@ -127,6 +127,6 @@ async def register_tasks(
                 )
                 for row in rows
             ]
-        except Exception as e:
+        except Exception:
             LOGGER.exception("Error inserting tasks")
-            raise e
+            raise

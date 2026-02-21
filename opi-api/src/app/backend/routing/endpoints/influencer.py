@@ -2,8 +2,8 @@ import logging
 
 from fastapi import HTTPException
 
-from app.models import Influencer
 from app.db import pool
+from app.models import Influencer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,8 +27,10 @@ async def get_influencer_accounts(
             )
         except TypeError as e:
             raise HTTPException(
-                status_code=404, detail=f"Influencer {username} not found"
+                status_code=404,
+                detail=f"Influencer {username} not found",
             ) from e
-        except Exception as e:
-            LOGGER.exception(f"Error fetching influencer account {username}")
-            raise e
+        except Exception:
+            message = f"Error fetching influencer account {username}"
+            LOGGER.exception(message)
+            raise

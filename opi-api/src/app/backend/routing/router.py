@@ -1,9 +1,6 @@
 import fastapi
 
-from app.backend.routing.endpoints import influencer
-from app.backend.routing.endpoints import extraction_task
-from app.backend.routing.endpoints import social_network
-
+from app.backend.routing.endpoints import extraction_task, influencer, social_network
 
 router = fastapi.APIRouter()
 router.add_api_route(

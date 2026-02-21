@@ -1,20 +1,28 @@
+"""Social network models."""
+
 from enum import StrEnum
 
 import pydantic
 
 
 class SocialNetwork(StrEnum):
+    """Available social networks."""
+
     YOUTUBE = "youtube"
     TIKTOK = "tiktok"
     INSTAGRAM = "instagram"
 
 
 class Influencer(pydantic.BaseModel):
+    """Influencer model."""
+
     uid: str
     username: str
 
 
 class Account(pydantic.BaseModel):
+    """Account model."""
+
     account_extracted_at: pydantic.AwareDatetime
     account_id: str
     social_network: str
@@ -29,6 +37,8 @@ class Account(pydantic.BaseModel):
 
 
 class Post(pydantic.BaseModel):
+    """Post model."""
+
     post_extracted_at: pydantic.AwareDatetime
     social_network: str
     account_id: str

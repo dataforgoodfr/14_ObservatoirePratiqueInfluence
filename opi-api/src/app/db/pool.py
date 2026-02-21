@@ -1,19 +1,18 @@
-# noqa: D100
-
 from __future__ import annotations
 
 import contextlib
 import logging
 import os
-from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 import asyncpg
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
 logger = logging.getLogger("uvicorn")
 
-DSN: str = (
-    os.getenv("POSTGRES_DSN") or "postgresql://postgres:postgres@localhost:5432/opidb"
-)
+DSN: str = os.getenv("POSTGRES_DSN") or "postgresql://postgres:postgres@localhost:5432/opidb"
 if "application_name" not in DSN:
     DSN += "&application_name=opi-api"
 
