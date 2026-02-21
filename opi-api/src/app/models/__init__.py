@@ -1,15 +1,17 @@
-from app.models.socialnetwork import Influencer
+from app.models.socialnetwork import Account, Influencer, Post
 from app.models.task import (
-    ExtractionTaskType,
     ExtractionTask,
+    ExtractionTaskType,
     ExtractionTaskStatus,
     ExtractionTaskResponse,
 )
 
 __all__ = [
+    "Account",
     "Influencer",
     "ExtractionTaskType",
     "ExtractionTask",
     "ExtractionTaskResponse",
     "ExtractionTaskStatus",
+    "Post",
 ]

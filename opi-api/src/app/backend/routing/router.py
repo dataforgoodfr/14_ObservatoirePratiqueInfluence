@@ -2,6 +2,7 @@ import fastapi
 
 from app.backend.routing.endpoints import influencer
 from app.backend.routing.endpoints import extraction_task
+from app.backend.routing.endpoints import social_network
 
 
 router = fastapi.APIRouter()
@@ -28,4 +29,16 @@ router.add_api_route(
     endpoint=extraction_task.register_tasks,
     methods=["POST"],
     description="Register tasks",
+)
+router.add_api_route(
+    "/posts/",
+    endpoint=social_network.upsert_posts,
+    methods=["POST"],
+    description="Upsert account posts",
+)
+router.add_api_route(
+    "/accounts/",
+    endpoint=social_network.upsert_accounts,
+    methods=["POST"],
+    description="Upsert accounts data",
 )
