@@ -36,6 +36,32 @@ class InstagramExtractor(DataExtractor):
         # You can adjust the size_limit (in bytes) if needed
         self.cache = diskcache.Cache("data/cache/instagram")
 
+    def _create_post_details_from_post(
+        self, post: instaloader.Post
+    ) -> PostDetailsExtractionResult:
+        """Helper to convert an Instaloader Post into a PostDetailsExtractionResult."""
+        return PostDetailsExtractionResult(
+            data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+            post_url=f"instagram.com/p/{post.shortcode}/",
+            title=post.title if post.title else "No title",
+            description=post.caption,
+            comment_count=post.comments,
+            view_count=0,  # No data on instagram
+            like_count=post.likes,
+            repost_count=0,  # No data on instagram
+            share_count=0,  # No data on instagram
+            tags=post.caption_hashtags,
+            categories=["no_data"],
+            sn_has_paid_placement=post.is_sponsored,
+            sn_brand=",".join([sponso.username for sponso in post.sponsor_users]),
+            post_type=post.typename,
+            text_content=(
+                "Tagged users: " + " @".join(post.tagged_users)
+                if post.tagged_users
+                else ""
+            ),
+        )
+
     def extract_account(
         self, task_config: ExtractAccountTaskConfig
     ) -> AccountExtractionResult:
@@ -62,7 +88,9 @@ class InstagramExtractor(DataExtractor):
             )
         except Exception as e:
             logger.error(f"Failed to extract account for {task_config.account_id}: {e}")
-            raise Exception(f"Failed to extract account: {e}")
+            raise Exception(
+                f"Failed to extract account for {task_config.account_id}"
+            ) from e
 
     def extract_post_list(
         self, task_config: ExtractPostListTaskConfig
@@ -87,37 +115,12 @@ class InstagramExtractor(DataExtractor):
                 ):
                     posts_ret.append({"post_id": post.shortcode, "published_at": d3})
 
-                    # Create the post details object
-                    post_details = PostDetailsExtractionResult(
-                        data_extraction_date=datetime.datetime.now(
-                            datetime.timezone.utc
-                        ),
-                        post_url=f"instagram.com/p/{post.shortcode}/",
-                        title=post.title if post.title else "No title",
-                        description=post.caption if post.title else "No description",
-                        comment_count=post.comments,
-                        view_count=0,  # No data on instagram
-                        like_count=post.likes,
-                        repost_count=0,  # No data on instagram
-                        share_count=0,  # No data on instagram
-                        tags=post.caption_hashtags,
-                        categories=["no_data"],
-                        sn_has_paid_placement=post.is_sponsored,
-                        sn_brand=",".join(
-                            [sponso.username for sponso in post.sponsor_users]
-                        ),
-                        post_type=post.typename,
-                        text_content=(
-                            "Tagged users: " + " @".join(post.tagged_users)
-                            if post.tagged_users
-                            else ""
-                        ),
-                    )
+                    post_details = self._create_post_details_from_post(post)
 
                     # Save to cache with the shortcode as the key.
-                    # Added a 7-day expiration (60 * 60 * 24 * 7 seconds) so stale data naturally clears.
+                    # Added a 14z-day expiration (60 * 60 * 24 * 14 seconds) so stale data naturally clears.
                     cache_key = f"post_{post.shortcode}"
-                    self.cache.set(cache_key, post_details, expire=604800)
+                    self.cache.set(cache_key, post_details, expire=60 * 60 * 24 * 14)
 
                 time.sleep(random.uniform(2, 6))
 
@@ -132,7 +135,9 @@ class InstagramExtractor(DataExtractor):
             logger.error(
                 f"Failed to extract post list for {task_config.account_id}: {e}"
             )
-            raise Exception(f"Failed to extract post list: {e}")
+            raise Exception(
+                f"Failed to extract post list for {task_config.account_id}"
+            ) from e
 
     def extract_post_details(
         self, task_config: ExtractPostDetailsTaskConfig
@@ -143,7 +148,7 @@ class InstagramExtractor(DataExtractor):
         cached_post = self.cache.get(cache_key)
 
         if cached_post:
-            print(f"CACHED_POST found for: {task_config.post_id}")
+            logger.info(f"CACHED_POST found for: {task_config.post_id}")
             return cached_post
 
         try:
@@ -151,27 +156,7 @@ class InstagramExtractor(DataExtractor):
             post = Post.from_shortcode(self.L.context, task_config.post_id)
             logger.debug(f"Fetched post: {post.title}")
 
-            post_details = PostDetailsExtractionResult(
-                data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
-                post_url=f"instagram.com/p/{task_config.post_id}/",
-                title=post.title if post.title else "No title",
-                description=post.caption,
-                comment_count=post.comments,
-                view_count=0,
-                like_count=post.likes,
-                repost_count=0,
-                share_count=0,
-                tags=post.caption_hashtags,
-                categories=["no_data"],
-                sn_has_paid_placement=post.is_sponsored,
-                sn_brand=",".join([sponso.username for sponso in post.sponsor_users]),
-                post_type=post.typename,
-                text_content=(
-                    "Tagged users: " + " @".join(post.tagged_users)
-                    if post.tagged_users
-                    else ""
-                ),
-            )
+            post_details = self._create_post_details_from_post(post)
 
             # Cache the newly fetched data
             self.cache.set(cache_key, post_details, expire=604800)
@@ -181,4 +166,6 @@ class InstagramExtractor(DataExtractor):
             logger.error(
                 f"Failed to extract post detail for {task_config.post_id}: {e}"
             )
-            raise Exception(f"Failed to extract post detail: {e}")
+            raise Exception(
+                f"Failed to extract post detail for {task_config.post_id}"
+            ) from e
