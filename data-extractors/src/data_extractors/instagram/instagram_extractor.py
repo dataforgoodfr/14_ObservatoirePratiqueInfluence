@@ -108,6 +108,10 @@ class InstagramExtractor(DataExtractor):
             posts_ret = []
             for i, post in enumerate(posts):
                 d3 = post.date.replace(tzinfo=timezone.utc)
+                # On instagram, users can pin up to 3 posts on their profiles.
+                # So when scrapping a profile, the posts 1, 2 and 3 can be posts from any dates.
+                # Additionnaly the posts are ranked in a chronological ordrer from the most recent to the oldest (appart from the first 3 ones).
+                # So we need to stop collecting posts whenever we reach a post with a date under our published_after date and that this post is not part of the 3 pinned posts.
                 if (i > 3) and (d3 < task_config.published_after):
                     break
                 if (d3 < task_config.published_before) and (
