@@ -1,9 +1,12 @@
+"""Main entrypoint for OPI API."""
+
 import argparse
 
 import uvicorn
 
 
 def parse_command() -> argparse.Namespace:
+    """Parse API command line arguments."""
     parser = argparse.ArgumentParser(
         description=("Starts a web server that serves a REST API for the OPI project."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -13,7 +16,7 @@ def parse_command() -> argparse.Namespace:
         "--host",
         help="The host to bind to.",
         type=str,
-        default="0.0.0.0",
+        default="0.0.0.0",  # noqa: S104
     )
     parser.add_argument(
         "--port",

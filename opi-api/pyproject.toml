@@ -8,6 +8,8 @@ dependencies = [
     "asyncpg>=0.31.0",
     "fastapi[all]>=0.128.0",
     "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "requests>=2.32.5",
 ]
 
 [dependency-groups]
@@ -32,3 +34,24 @@ opi-api = "app:main"
 [tool.mypy]
 disallow_untyped_defs = true
 check_untyped_defs = true
+
+[tool.ruff]
+target-version = "py312"
+
+line-length = 100
+format.quote-style = "double"
+
+lint.select = ["ALL"]
+
+lint.ignore = [
+    "COM812",
+    "D203",
+    "D213",
+    "D211",
+    "ANN003",
+    "FIX002",
+    "TD003",
+    "D100",
+    "D103",
+    "D104",
+]
