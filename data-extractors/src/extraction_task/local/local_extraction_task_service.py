@@ -68,7 +68,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
         task.status = ExtractionTaskStatus.ACQUIRED
         task.visible_at = datetime.datetime.now(
             datetime.timezone.utc
-        ) + datetime.timedelta(minutes=15)
+        ) + datetime.timedelta(minutes=60)
         self._task_repository.upsert(task)
 
         return task

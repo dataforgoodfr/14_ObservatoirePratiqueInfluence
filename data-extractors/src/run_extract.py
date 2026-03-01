@@ -3,6 +3,7 @@ import os
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
+from data_extractors.tiktok.tiktok_extractor_v2 import TiktokExtractorV2
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
@@ -24,10 +25,18 @@ from os import path
 def create_extractor(social_network: SocialNetwork, cache_folder: str) -> DataExtractor:
     extractors = {
         SocialNetwork.INSTAGRAM: InstagramExtractor,
-        SocialNetwork.TIKTOK: TiktokExtractor,
+        SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(cache_folder),
         SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(cache_folder),
     }
     return extractors[social_network]()
+
+
+def create_tiktok_extractor(cache_folder: str) -> DataExtractor:
+    if os.getenv("TIKTOK_EXTRACTOR") == "V1":
+        return TiktokExtractor()
+    else:
+        # Default to V2
+        return TiktokExtractorV2(cache_folder=path.join(cache_folder, "tiktok"))
 
 
 def create_youtube_extractor(cache_folder: str) -> YoutubeExtractor:
