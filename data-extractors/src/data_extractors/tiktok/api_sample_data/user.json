@@ -1,0 +1,66 @@
+{
+  "extra": {
+    "fatal_item_ids": [],
+    "logid": "202602262013308CB8F59A13257B57D49D",
+    "now": 1772136810000
+  },
+  "log_pb": { "impr_id": "202602262013308CB8F59A13257B57D49D" },
+  "shareMeta": {
+    "desc": "@benoit_chevalier 12.7m Followers, 3642 Following, 695.3m Likes - Watch awesome short videos created by Beno\u00eet Chevalier",
+    "title": "Beno\u00eet Chevalier on TikTok"
+  },
+  "statusCode": 0,
+  "status_code": 0,
+  "status_msg": "",
+  "userInfo": {
+    "stats": {
+      "diggCount": 0,
+      "followerCount": 12700000,
+      "followingCount": 3642,
+      "friendCount": 3541,
+      "heart": 695300000,
+      "heartCount": 695300000,
+      "videoCount": 2724
+    },
+    "statsV2": {
+      "diggCount": "0",
+      "followerCount": "12699191",
+      "followingCount": "3642",
+      "friendCount": "3541",
+      "heart": "695282724",
+      "heartCount": "695282724",
+      "videoCount": "2724"
+    },
+    "user": {
+      "UserStoryStatus": 0,
+      "avatarLarger": "https://p19-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/163577e578b33b0516552b2fd13f4510~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=e550ca4e&x-expires=1772308800&x-signature=ke%2F1wsA9HqLffKA3rGdXB07CjD0%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a",
+      "avatarMedium": "https://p19-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/163577e578b33b0516552b2fd13f4510~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=315285c6&x-expires=1772308800&x-signature=u8Be2vTTiucPNHtS874NcuGcDas%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a",
+      "avatarThumb": "https://p16-pu-sign-no.tiktokcdn-eu.com/tos-no1a-avt-0068c001-no/163577e578b33b0516552b2fd13f4510~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=49cfcaff&x-expires=1772308800&x-signature=kSq1bnwAuRE%2FckXIzJ%2BIy0mHoW8%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a",
+      "bioLink": { "link": "https://sova.trium.fr/fr/s/queenhouse", "risk": 3 },
+      "canExpPlaylist": true,
+      "commentSetting": 0,
+      "commerceUserInfo": { "commerceUser": false },
+      "downloadSetting": 0,
+      "duetSetting": 0,
+      "followingVisibility": 2,
+      "ftc": false,
+      "id": "6649088965985124357",
+      "isADVirtual": false,
+      "isEmbedBanned": false,
+      "nickNameModifyTime": 1661122108,
+      "nickname": "Beno\u00eet Chevalier",
+      "openFavorite": false,
+      "privateAccount": false,
+      "profileEmbedPermission": 1,
+      "profileTab": { "showPlayListTab": true },
+      "relation": 0,
+      "secUid": "MS4wLjABAAAALAlnLMvFxUHdqBSyG7qBRbW2eTvKTMS0xJZJUdZQ7_aKr9eks_KmTu3O-nWPChJp",
+      "secret": false,
+      "signature": "contact.benoitchevalier@gmail.com\nQuand t\u2019es une Queen \ud83d\udc51\n12M Love \ud83d\udc95",
+      "stitchSetting": 0,
+      "ttSeller": false,
+      "uniqueId": "benoit_chevalier",
+      "verified": true
+    }
+  }
+}
