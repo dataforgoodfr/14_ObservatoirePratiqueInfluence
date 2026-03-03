@@ -1,8 +1,14 @@
 import csv
-from dataclasses import dataclass
 import datetime
-from urllib.parse import urlparse
+import logging
 import uuid
+from os import path
+from typing import Literal
+from urllib.parse import urlparse
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from extraction_task.extraction_task import (
     ExtractionTask,
     ExtractionTaskStatus,
@@ -16,23 +22,40 @@ from extraction_task.local.task_repository import TaskRepository
 from extraction_task.social_network import SocialNetwork
 
 
-import logging
+class GenerateTaskSettings(BaseSettings):
+    """Settings for the generate-task command."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        nested_model_default_partial_update=True,
+        env_nested_delimiter="__",
+        extra="ignore",
+    )
+    task_type: Literal["all", "account", "post-list"] = Field(
+        default="all", description="Which task types to generate"
+    )
+    published_after: datetime.datetime = Field(
+        default=datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc),
+        description="Start date for post list extraction in YYYY-MM-DD format",
+    )
+    published_before: datetime.datetime = Field(
+        default=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc),
+        description="End date for post list extraction in YYYY-MM-DD format",
+    )
+    replace: bool = Field(
+        default=True, description="Whether to replace existing tasks or append to them"
+    )
+    urls_file: str = Field(
+        default=path.join("data", "account_urls.csv"),
+        description="Path to the input CSV file with account URLs",
+    )
+    tasks_file: str = Field(
+        default=path.join("data", "extraction_tasks.csv"),
+        description="Path to the output CSV file for extraction tasks",
+    )
 
 
-from typing import Literal
-
-
-@dataclass
-class GenerateTaskConfig:
-    task_type: Literal["all", "account", "post-list"]
-    published_after: datetime.datetime
-    published_before: datetime.datetime
-    replace: bool
-    urls_file: str
-    tasks_file: str
-
-
-def run_generate_task(config: GenerateTaskConfig) -> None:
+def run_generate_task(config: GenerateTaskSettings) -> None:
     logging.info("config: %s", config)
 
     generate_tasks_from_accounts(
