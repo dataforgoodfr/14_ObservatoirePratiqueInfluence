@@ -18,6 +18,10 @@ dependencies = [
 disallow_untyped_defs = true
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = ["TikTokApi", "diskcache"]
+follow_untyped_imports = true
+
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",

@@ -8,6 +8,7 @@ from extraction_task.extraction_task_result import (
     AccountExtractionResult,
     PostDetailsExtractionResult,
     PostListExtractionResult,
+    PostListResultItem,
 )
 import time
 import random
@@ -49,7 +50,7 @@ class InstagramExtractor(DataExtractor):
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=f"instagram.com/p/{post.shortcode}/",
             title=post.title if post.title else "No title",
-            description=post.caption,
+            description=post.caption if post.caption is not None else "",
             comment_count=post.comments,
             view_count=0,  # No data on instagram
             like_count=post.likes,
@@ -110,7 +111,7 @@ class InstagramExtractor(DataExtractor):
                 self.L.context, task_config.account_id
             ).get_posts()
 
-            posts_ret = []
+            posts_ret: list[PostListResultItem] = []
             for i, post in enumerate(posts):
                 d3 = post.date.replace(tzinfo=timezone.utc)
                 # On instagram, users can pin up to 3 posts on their profiles.
@@ -122,7 +123,9 @@ class InstagramExtractor(DataExtractor):
                 if (d3 < task_config.published_before) and (
                     d3 > task_config.published_after
                 ):
-                    posts_ret.append({"post_id": post.shortcode, "published_at": d3})
+                    posts_ret.append(
+                        PostListResultItem(post_id=post.shortcode, published_at=d3)
+                    )
 
                     post_details = self._create_post_details_from_post(post)
 
