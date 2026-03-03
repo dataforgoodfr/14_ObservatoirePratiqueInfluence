@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class TiktokExtractor(DataExtractor):
-    def __init__(self, browser_name=None):
+    def __init__(self) -> None:
         self.headers = {
             "Accept-Encoding": "gzip, deflate, sdch",
             "Accept-Language": "en-US,en;q=0.8",
@@ -46,18 +46,13 @@ class TiktokExtractor(DataExtractor):
         )
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, "html.parser")
-        rehydration_data = soup.find(
-            "script", attrs={"id": "__UNIVERSAL_DATA_FOR_REHYDRATION__"}
-        )
-
-        rehydration_data_json = json.loads(rehydration_data.string)
+        rehydration_data = self._extract_rehydration_data(response.text)
 
         # filtering html data
         try:
-            user_data = rehydration_data_json["__DEFAULT_SCOPE__"][
-                "webapp.user-detail"
-            ]["userInfo"]
+            user_data = rehydration_data["__DEFAULT_SCOPE__"]["webapp.user-detail"][
+                "userInfo"
+            ]
             user_info = user_data["user"]
             user_stats = user_data["statsV2"]
 
@@ -85,7 +80,6 @@ class TiktokExtractor(DataExtractor):
         self,
         task_config: ExtractPostDetailsTaskConfig,
     ) -> PostDetailsExtractionResult:
-        script_tag = None
         post_url = f"https://www.tiktok.com/@tiktok/video/{task_config.post_id}"
         response = requests.get(
             f"https://www.tiktok.com/@tiktok/video/{task_config.post_id}",
@@ -94,13 +88,7 @@ class TiktokExtractor(DataExtractor):
             timeout=20,
             stream=False,
         )
-        soup = BeautifulSoup(response.text, "html.parser")
-        script_tag = soup.find("script", id="__UNIVERSAL_DATA_FOR_REHYDRATION__")
-
-        if script_tag is None:
-            raise KeyError("__UNIVERSAL_DATA_FOR_REHYDRATION__ not in response")
-
-        data = json.loads(script_tag.string)
+        data = self._extract_rehydration_data(response.text)
         post_data = data["__DEFAULT_SCOPE__"]["webapp.video-detail"]["itemInfo"][
             "itemStruct"
         ]
@@ -123,3 +111,15 @@ class TiktokExtractor(DataExtractor):
             post_type="video",
             text_content="",  # not relevant for video posts
         )
+
+    def _extract_rehydration_data(self, html_text: str) -> dict:
+        soup = BeautifulSoup(html_text, "html.parser")
+        script_tag = soup.find(
+            "script", attrs={"id": "__UNIVERSAL_DATA_FOR_REHYDRATION__"}
+        )
+
+        if script_tag is None or script_tag.string is None:
+            raise KeyError("__UNIVERSAL_DATA_FOR_REHYDRATION__ not in response")
+
+        rehydration_data = json.loads(script_tag.string)
+        return rehydration_data
