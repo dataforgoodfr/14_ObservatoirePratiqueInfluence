@@ -29,12 +29,16 @@ logger = logging.getLogger(__name__)
 
 
 class TiktokExtractorV2(DataExtractor):
-    def __init__(self, cache_folder: str, write_raw_data_to_disk: bool = False) -> None:
+    def __init__(
+        self,
+        cache_folder: str,
+        cache_ttl_seconds: int,
+        write_raw_data_to_disk: bool = False,
+    ) -> None:
         self.cache = diskcache.Cache(
             directory=cache_folder,
         )
-        # 7 days expiry
-        self.cache_expire_seconds = 3600 * 24 * 7
+        self.cache_ttl_seconds = cache_ttl_seconds
         # Whether to store raw API data for further analysis/reuse
         self.write_raw_data = write_raw_data_to_disk
         if write_raw_data_to_disk:
@@ -118,7 +122,7 @@ class TiktokExtractorV2(DataExtractor):
                     self.cache.set(
                         self._video_cache_key(video.id),
                         post_details_result,
-                        expire=self.cache_expire_seconds,
+                        expire=self.cache_ttl_seconds,
                     )
 
                 posts = [
@@ -179,7 +183,7 @@ class TiktokExtractorV2(DataExtractor):
                 self.cache.set(
                     cache_key,
                     post_details_result,
-                    expire=self.cache_expire_seconds,
+                    expire=self.cache_ttl_seconds,
                 )
 
                 return post_details_result
