@@ -51,25 +51,30 @@ class TiktokExtractorV2(DataExtractor):
         self,
         task_config: ExtractAccountTaskConfig,
     ) -> AccountExtractionResult:
-        async with TikTokApi() as api:
-            await create_sessions(api)
-            user_data = await api.user(username=task_config.account_id).info()
-            self._write_user_dict_to_disk(task_config.account_id, user_data)
+        try:
+            async with TikTokApi() as api:
+                await create_sessions(api)
+                user_data = await api.user(username=task_config.account_id).info()
+                self._write_user_dict_to_disk(task_config.account_id, user_data)
 
-            user_info = user_data["userInfo"]
-            user_info_user = user_info["user"]
-            user_info_statsV2 = user_info["statsV2"]
-            return AccountExtractionResult(
-                data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
-                handle=user_info_user["uniqueId"],
-                description=user_info_user["signature"],
-                follower_count=int(user_info_statsV2["followerCount"]),
-                following_count=int(user_info_statsV2["followingCount"]),
-                post_count=int(user_info_statsV2["videoCount"]),
-                like_count=int(user_info_statsV2["heartCount"]),
-                view_count=0,  # not availabled at user level
-                categories=[],  # not availabled
-            )
+                user_info = user_data["userInfo"]
+                user_info_user = user_info["user"]
+                user_info_statsV2 = user_info["statsV2"]
+                return AccountExtractionResult(
+                    data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+                    handle=user_info_user["uniqueId"],
+                    description=user_info_user["signature"],
+                    follower_count=int(user_info_statsV2["followerCount"]),
+                    following_count=int(user_info_statsV2["followingCount"]),
+                    post_count=int(user_info_statsV2["videoCount"]),
+                    like_count=int(user_info_statsV2["heartCount"]),
+                    view_count=0,  # not availabled at user level
+                    categories=[],  # not availabled
+                )
+        except Exception as e:
+            message = f"Failed to extract account details for account id: {task_config.account_id}"
+            logger.exception(message)
+            raise TiktokExtractionException(message) from e
 
     def extract_post_list(
         self, task_config: ExtractPostListTaskConfig
@@ -136,10 +141,12 @@ class TiktokExtractorV2(DataExtractor):
                 )
 
         except Exception as e:
-            logger.error(
-                f"Failed to extract post list for {task_config.account_id}: {e}"
+            message = (
+                f"Failed to extract post list for account id: {task_config.account_id}, "
+                + f"published_after: {task_config.published_after}, published_before: {task_config.published_before}"
             )
-            raise Exception(f"Failed to extract post list: {e}")
+            logger.exception(message)
+            raise TiktokExtractionException(message) from e
 
     def extract_post_details(
         self,
@@ -151,26 +158,37 @@ class TiktokExtractorV2(DataExtractor):
         self,
         task_config: ExtractPostDetailsTaskConfig,
     ) -> PostDetailsExtractionResult:
-        video_id = task_config.post_id
-        cache_key = self._video_cache_key(task_config.post_id)
-        cached_value = self.cache.get(cache_key)
-        if cached_value:
-            logger.info(f"CACHED_POST found for: {video_id}")
-            return cached_value
+        try:
+            video_id = task_config.post_id
+            cache_key = self._video_cache_key(task_config.post_id)
+            cached_value = self.cache.get(cache_key)
+            if cached_value:
+                logger.info(f"CACHED_POST found for: {video_id}")
+                return cached_value
 
-        async with TikTokApi() as api:
-            await create_sessions(api)
-            user_agnostic_video_url = f"https://www.tiktok.com/@tiktok/video/{video_id}"
-            video_data = await api.video(url=user_agnostic_video_url).info()
-            self._write_video_dict_to_disk(video_id=video_id, raw_data=video_data)
-            post_details_result = self._build_post_details_result_from_video(video_data)
-            self.cache.set(
-                cache_key,
-                post_details_result,
-                expire=self.cache_expire_seconds,
+            async with TikTokApi() as api:
+                await create_sessions(api)
+                user_agnostic_video_url = (
+                    f"https://www.tiktok.com/@tiktok/video/{video_id}"
+                )
+                video_data = await api.video(url=user_agnostic_video_url).info()
+                self._write_video_dict_to_disk(video_id=video_id, raw_data=video_data)
+                post_details_result = self._build_post_details_result_from_video(
+                    video_data
+                )
+                self.cache.set(
+                    cache_key,
+                    post_details_result,
+                    expire=self.cache_expire_seconds,
+                )
+
+                return post_details_result
+        except Exception as e:
+            message = (
+                f"Failed to extract post details for video id: {task_config.post_id}"
             )
-
-            return post_details_result
+            logger.exception(message)
+            raise TiktokExtractionException(message) from e
 
     def _write_user_dict_to_disk(self, account_id: str, raw_data: dict) -> None:
         if self.write_raw_data:
@@ -218,3 +236,8 @@ class TiktokExtractorV2(DataExtractor):
             post_type="video",
             text_content="",  # nto relevant for video posts
         )
+
+
+class TiktokExtractionException(Exception):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
