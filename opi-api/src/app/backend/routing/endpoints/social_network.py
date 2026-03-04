@@ -1,13 +1,15 @@
 import http
 
-from fastapi import Response
+from fastapi import Depends, Response
 
+from app._auth import validate_api_key
 from app._config import settings
 from app.models import Account, Post
 from app.nocodb import NocoDBClient
 
+API_KEY = Depends(validate_api_key)
 
-async def upsert_posts(posts: list[Post]) -> Response:
+async def upsert_posts(posts: list[Post], api_key: str = API_KEY) -> Response:
     client = NocoDBClient()
     for post in posts:
         client.upsert_record(
@@ -43,7 +45,7 @@ async def upsert_posts(posts: list[Post]) -> Response:
     return Response(status_code=http.HTTPStatus.NO_CONTENT)
 
 
-async def upsert_accounts(accounts: list[Account]) -> Response:
+async def upsert_accounts(accounts: list[Account], api_key: str = API_KEY) -> Response:
     client = NocoDBClient()
     for account in accounts:
         client.upsert_record(

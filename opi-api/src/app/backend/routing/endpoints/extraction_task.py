@@ -5,13 +5,16 @@ from http import HTTPStatus
 
 import fastapi
 
+from app._auth import validate_api_key
 from app.db import pool
 from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskStatus
 
 LOGGER = logging.getLogger(__name__)
+API_KEY = fastapi.Depends(validate_api_key)
 
-
-async def acquire_available_task() -> ExtractionTaskResponse:
+async def acquire_available_task(
+    api_key: str = API_KEY,
+) -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
         SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '15 minutes'
@@ -48,7 +51,11 @@ async def acquire_available_task() -> ExtractionTaskResponse:
             raise
 
 
-async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> fastapi.Response:
+async def update_task(
+    task_uid: uuid.UUID,
+    status: ExtractionTaskStatus,
+    api_key: str = API_KEY,
+) -> fastapi.Response:
     update_task = """
         UPDATE v1.extraction_task
         SET status = $2
@@ -71,6 +78,7 @@ async def update_task(task_uid: uuid.UUID, status: ExtractionTaskStatus) -> fast
 
 async def register_tasks(
     extraction_tasks: list[ExtractionTask],
+    api_key: str = API_KEY,
 ) -> list[ExtractionTask]:
     register_tasks = """
         INSERT INTO v1.extraction_task (
