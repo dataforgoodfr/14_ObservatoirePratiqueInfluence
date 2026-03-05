@@ -28,16 +28,21 @@ Then run
 uv run src/main.py extract -n youtube
 ```
 
-## Running tiktok
-As we do not have an automatic way to extract post list yet, we need to manually generate the task. For testing purposes the easiest would be to copy the extraction sample task for tiktok.
+## Running tiktok extractor
 
+Tiktok default extractor uses TikTokApi which itself uses paywright.
+Current implementation defaults to headed mode (headless=False) to avoid bans so it opens a browser windows.
+To avoid this you can use xvfb  (X virtual frame buffer) to run the command
 ```bash
-cp data/tiktok_sample_task.csv data/extraction_task.csv
-uv run src/main.py extract -n tiktok
+xvfb-run uv run src/main.py extract -n tiktok
 ```
 
-## Running toktok /instagram extractor
-TODO
+## Running instagram extractor
+
+Note: Running instagram extractor needs to use a mobile internet connexion
+```bash
+uv run src/main.py extract -n instagram
+```
 
 # Uploading local accounts and posts CSVs to the central noco db
 
