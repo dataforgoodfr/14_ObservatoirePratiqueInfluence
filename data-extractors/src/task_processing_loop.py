@@ -62,7 +62,7 @@ class TaskProcessingLoop:
                         "Task with id %s completed - Marking as completed",
                         task.id,
                     )
-                    self._task_service.mark_task_completed(task.id, result)
+                    self._task_service.mark_task_completed(task, result)
                 except KeyboardInterrupt as kb:
                     raise kb
                 except Exception as e:

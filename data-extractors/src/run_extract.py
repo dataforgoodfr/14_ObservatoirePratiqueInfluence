@@ -6,6 +6,7 @@ from typing import Literal, Optional, Self
 from pydantic import AliasChoices, BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from extraction_task.api.api_extraction_task_service import ApiExtractionTaskService
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
@@ -68,6 +69,20 @@ class ExtractSettings(BaseSettings):
         default=3600 * 24 * 7, description="Cache time to live in seconds"
     )
 
+    backend: Literal["fs", "api"] = Field(
+        default="api",
+        description="Configure whether to use filesystem or server to acquire tasks and store results",
+    )
+
+    api_url: str = Field(
+        default="http://localhost:8000",
+        description="API backend url. Required when backend=api.",
+    )
+
+    api_key: Optional[str] = Field(
+        default=None,
+        description="API backend auth token. Required when backend=api.",
+    )
     fs_tasks_file: str = Field(
         default=path.join("data", "extraction_tasks.csv"),
         description="FS backend tasks csv file",
@@ -85,6 +100,9 @@ class ExtractSettings(BaseSettings):
 
     @model_validator(mode="after")
     def check_required(self) -> Self:
+        if self.backend == "api" and self.api_key is None:
+            raise ValueError('api_key required when backend="api"')
+
         if self.social_network == "youtube" and self.youtube.api_key is None:
             raise ValueError('youtube.api_key required when social-network="youtube"')
         return self
@@ -108,14 +126,20 @@ def run_extract(config: ExtractSettings) -> None:
 
 
 def create_task_service(config: ExtractSettings) -> ExtractionTaskService:
-    task_repository = TaskRepository(config.fs_tasks_file)
-    account_repository = AccountRepository(
-        path.join(config.fs_result_folder, "accounts.csv")
-    )
-    post_repository = PostRepository(path.join(config.fs_result_folder, "posts.csv"))
-    return LocalExtractionTaskService(
-        task_repository, account_repository, post_repository
-    )
+    if config.backend == "api":
+        assert config.api_key is not None
+        return ApiExtractionTaskService(config.api_url, config.api_key)
+    else:
+        task_repository = TaskRepository(config.fs_tasks_file)
+        account_repository = AccountRepository(
+            path.join(config.fs_result_folder, "accounts.csv")
+        )
+        post_repository = PostRepository(
+            path.join(config.fs_result_folder, "posts.csv")
+        )
+        return LocalExtractionTaskService(
+            task_repository, account_repository, post_repository
+        )
 
 
 def create_extractor(config: ExtractSettings) -> DataExtractor:

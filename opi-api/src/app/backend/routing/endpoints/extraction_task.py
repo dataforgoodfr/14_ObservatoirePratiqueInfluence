@@ -11,7 +11,9 @@ from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskSta
 LOGGER = logging.getLogger(__name__)
 
 
-async def acquire_available_task() -> ExtractionTaskResponse:
+async def acquire_available_task(
+    social_network: str | None = None,
+) -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
         SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '15 minutes'
@@ -19,6 +21,7 @@ async def acquire_available_task() -> ExtractionTaskResponse:
             SELECT uid
             FROM v1.extraction_task
             WHERE status = 'AVAILABLE'
+            AND ($1::text IS NULL OR social_network = $1::text)
             ORDER BY created_at ASC
             LIMIT 1
         )
@@ -32,7 +35,7 @@ async def acquire_available_task() -> ExtractionTaskResponse:
 
     async with pool.PGPool.get_connection() as conn:
         try:
-            row = await conn.fetchrow(get_task)
+            row = await conn.fetchrow(get_task, social_network)
 
             if row:
                 return ExtractionTaskResponse(

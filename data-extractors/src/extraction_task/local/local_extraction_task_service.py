@@ -74,28 +74,24 @@ class LocalExtractionTaskService(ExtractionTaskService):
         return task
 
     def mark_task_completed(
-        self, task_id: uuid.UUID, task_result: ExtractionTaskResult
+        self, task: ExtractionTask, task_result: ExtractionTaskResult
     ) -> None:
-        task = self._task_repository.find_by_id(task_id)
-        if task is None:
+        social_network = task.social_network
+        task_config = task.task_config
+        refetched_task = self._task_repository.find_by_id(task.id)
+        if refetched_task is None:
             raise Exception("Task does not exist")
 
-        if not task.is_acquired_and_current():
+        if not refetched_task.is_acquired_and_current():
             raise Exception("Task is not acquired or acquisition timedout")
 
-        task.visible_at = None
-        task.error = None
-        task.status = ExtractionTaskStatus.COMPLETED
-
-        if (
-            task.type == ExtractionTaskType.EXTRACT_ACCOUNT
-            and isinstance(task_result, AccountExtractionResult)
-            and isinstance(task.task_config, ExtractAccountTaskConfig)
-        ):
+        if task.type == ExtractionTaskType.EXTRACT_ACCOUNT:
+            assert isinstance(task_result, AccountExtractionResult)
+            assert isinstance(task_config, ExtractAccountTaskConfig)
             self._account_repository.upsertAccount(
                 Account(
-                    social_network=task.social_network,
-                    account_id=task.task_config.account_id,
+                    social_network=social_network,
+                    account_id=task_config.account_id,
                     handle=task_result.handle,
                     account_extraction_date=task_result.data_extraction_date,
                     description=task_result.description,
@@ -107,17 +103,15 @@ class LocalExtractionTaskService(ExtractionTaskService):
                     categories=task_result.categories,
                 )
             )
-        elif (
-            task.type == ExtractionTaskType.EXTRACT_POST_LIST
-            and isinstance(task_result, PostListExtractionResult)
-            and isinstance(task.task_config, ExtractPostListTaskConfig)
-        ):
+        elif task.type == ExtractionTaskType.EXTRACT_POST_LIST:
+            assert isinstance(task_result, PostListExtractionResult)
+            assert isinstance(task_config, ExtractPostListTaskConfig)
             for post in task_result.posts:
                 self._post_repository.upsert_post_list_item(
                     PostListItem(
-                        social_network=task.social_network,
+                        social_network=social_network,
                         post_id=post.post_id,
-                        account_id=task.task_config.account_id,
+                        account_id=task_config.account_id,
                     )
                 )
 
@@ -126,7 +120,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
                     self._task_repository.upsert(
                         ExtractionTask(
                             id=uuid.uuid4(),
-                            social_network=task.social_network,
+                            social_network=social_network,
                             type=ExtractionTaskType.EXTRACT_POST_DETAILS,
                             task_config=ExtractPostDetailsTaskConfig(
                                 post_id=post.post_id
@@ -136,15 +130,13 @@ class LocalExtractionTaskService(ExtractionTaskService):
                             visible_at=None,
                         )
                     )
-        elif (
-            task.type == ExtractionTaskType.EXTRACT_POST_DETAILS
-            and isinstance(task_result, PostDetailsExtractionResult)
-            and isinstance(task.task_config, ExtractPostDetailsTaskConfig)
-        ):
+        elif task.type == ExtractionTaskType.EXTRACT_POST_DETAILS:
+            assert isinstance(task_result, PostDetailsExtractionResult)
+            assert isinstance(task_config, ExtractPostDetailsTaskConfig)
             self._post_repository.upsert_post_details(
                 PostDetails(
-                    social_network=task.social_network,
-                    post_id=task.task_config.post_id,
+                    social_network=social_network,
+                    post_id=task_config.post_id,
                     post_extraction_date=task_result.data_extraction_date,
                     post_url=task_result.post_url,
                     title=task_result.title,
@@ -164,22 +156,26 @@ class LocalExtractionTaskService(ExtractionTaskService):
             )
         else:
             raise Exception("Unexpected result")
-        self._task_repository.upsert(task)
+
+        refetched_task.visible_at = None
+        refetched_task.error = None
+        refetched_task.status = ExtractionTaskStatus.COMPLETED
+        self._task_repository.upsert(refetched_task)
         return
 
-    def mark_task_failed(self, task_id: uuid.UUID, task_error: str) -> None:
-        task = self._task_repository.find_by_id(task_id)
-        if task is None:
+    def mark_task_failed(self, task: ExtractionTask, task_error: str) -> None:
+        refetched_task = self._task_repository.find_by_id(task.id)
+        if refetched_task is None:
             raise Exception("Task does not exist")
 
-        if not task.is_acquired_and_current():
+        if not refetched_task.is_acquired_and_current():
             raise Exception(
                 f"Task is not acquired or acquisition timed out - status:{task.status}, visible_at:{task.visible_at}"
             )
 
-        task.status = ExtractionTaskStatus.FAILED
-        task.error = task_error
-        task.visible_at = None
+        refetched_task.status = ExtractionTaskStatus.FAILED
+        refetched_task.error = task_error
+        refetched_task.visible_at = None
 
-        self._task_repository.upsert(task)
+        self._task_repository.upsert(refetched_task)
         return
