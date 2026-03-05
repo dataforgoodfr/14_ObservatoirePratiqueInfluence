@@ -12,6 +12,7 @@ from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskSta
 LOGGER = logging.getLogger(__name__)
 API_KEY = fastapi.Depends(validate_api_key)
 
+
 async def acquire_available_task(
     api_key: str = API_KEY,
 ) -> ExtractionTaskResponse:
@@ -125,7 +126,6 @@ async def register_tasks(
             return [
                 ExtractionTask(
                     uid=row[0],
-                    created_at=row[1],
                     type=row[2],
                     task_config=json.loads(row[3]),
                     social_network=row[4],

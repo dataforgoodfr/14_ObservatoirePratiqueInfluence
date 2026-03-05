@@ -27,3 +27,21 @@ jobs:
       - run: ruff format $GITHUB_WORKSPACE/data-extractors
 
       - run: ruff check --fix $GITHUB_WORKSPACE/data-extractors
+
+  python-typecheck:
+    name: Run mypy type check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Type check opi-api
+        working-directory: ${{github.workspace}}/opi-api
+        run: uv run mypy src
+
+      - name: Type check data-extractors
+        working-directory: ${{github.workspace}}/data-extractors
+        run: uv run mypy src
