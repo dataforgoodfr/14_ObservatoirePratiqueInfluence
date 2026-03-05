@@ -17,6 +17,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!frontend/lib/
 lib64/
 lib64
 parts/
@@ -124,6 +125,7 @@ celerybeat.pid
 
 # Environments
 .env
+!.env.example
 .env.test
 .venv
 env/
