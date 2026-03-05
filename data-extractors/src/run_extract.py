@@ -3,6 +3,7 @@ import os
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
+from data_extractors.tiktok.tiktok_extractor_v2 import TiktokExtractorV2
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
@@ -21,22 +22,55 @@ import logging
 from os import path
 
 
-def create_extractor(social_network: SocialNetwork, cache_folder: str) -> DataExtractor:
+def create_extractor(
+    social_network: SocialNetwork, cache_folder: str, cache_ttl_seconds: int
+) -> DataExtractor:
     extractors = {
-        SocialNetwork.INSTAGRAM: InstagramExtractor,
-        SocialNetwork.TIKTOK: TiktokExtractor,
-        SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(cache_folder),
+        SocialNetwork.INSTAGRAM: lambda: create_instagram_extractor(
+            cache_folder, cache_ttl_seconds
+        ),
+        SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(
+            cache_folder, cache_ttl_seconds
+        ),
+        SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(
+            cache_folder, cache_ttl_seconds
+        ),
     }
     return extractors[social_network]()
 
 
-def create_youtube_extractor(cache_folder: str) -> YoutubeExtractor:
+def create_tiktok_extractor(cache_folder: str, cache_ttl_seconds: int) -> DataExtractor:
+    if os.getenv("TIKTOK_EXTRACTOR") == "V1":
+        return TiktokExtractor()
+    else:
+        # Default to V2
+        return TiktokExtractorV2(
+            cache_folder=path.join(cache_folder, "tiktok"),
+            cache_ttl_seconds=cache_ttl_seconds,
+        )
+
+
+def create_instagram_extractor(
+    cache_folder: str, cache_ttl_seconds: int
+) -> DataExtractor:
+    return InstagramExtractor(
+        cache_folder=path.join(cache_folder, "instagram"),
+        cache_ttl_seconds=cache_ttl_seconds,
+    )
+
+
+def create_youtube_extractor(
+    cache_folder: str, cache_ttl_seconds: int
+) -> YoutubeExtractor:
     api_key = os.getenv("YOUTUBE_API_KEY")
     if not api_key:
         raise Exception("YOUTUBE_API_KEY environment variable is required")
     api_config = YoutubeApiConfig(
         api_key=api_key,
-        cache_config=DiskCacheConfig(cache_dir=path.join(cache_folder, "youtube")),
+        cache_config=DiskCacheConfig(
+            cache_dir=path.join(cache_folder, "youtube"),
+            ttl_seconds=cache_ttl_seconds,
+        ),
     )
     return YoutubeExtractor(api_config=api_config)
 
@@ -48,6 +82,7 @@ class ExtractConfig:
     tasks_file: str
     result_folder: str
     cache_folder: str
+    cache_ttl_seconds: int
 
 
 def run_extract(config: ExtractConfig) -> None:
@@ -63,7 +98,9 @@ def run_extract(config: ExtractConfig) -> None:
     )
 
     extractor = create_extractor(
-        config.social_network, cache_folder=config.cache_folder
+        config.social_network,
+        cache_folder=config.cache_folder,
+        cache_ttl_seconds=config.cache_ttl_seconds,
     )
 
     loop = TaskProcessingLoop(

@@ -23,8 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 class InstagramExtractor(DataExtractor):
+    def __init__(
+        self,
+        cache_folder: str,
+        cache_ttl_seconds: int,
+    ):
 
-    def __init__(self):
         self.L = instaloader.Instaloader(
             download_pictures=False,
             download_videos=False,
@@ -34,7 +38,8 @@ class InstagramExtractor(DataExtractor):
         )
         # Initialize a persistent, SQLite-backed cache
         # You can adjust the size_limit (in bytes) if needed
-        self.cache = diskcache.Cache("data/cache/instagram")
+        self.cache = diskcache.Cache(cache_folder)
+        self.cache_ttl_seconds = cache_ttl_seconds
 
     def _create_post_details_from_post(
         self, post: instaloader.Post
@@ -122,9 +127,11 @@ class InstagramExtractor(DataExtractor):
                     post_details = self._create_post_details_from_post(post)
 
                     # Save to cache with the shortcode as the key.
-                    # Added a 14z-day expiration (60 * 60 * 24 * 14 seconds) so stale data naturally clears.
+
                     cache_key = f"post_{post.shortcode}"
-                    self.cache.set(cache_key, post_details, expire=60 * 60 * 24 * 14)
+                    self.cache.set(
+                        cache_key, post_details, expire=self.cache_ttl_seconds
+                    )
 
                 time.sleep(random.uniform(2, 6))
 

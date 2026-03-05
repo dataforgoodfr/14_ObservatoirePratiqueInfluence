@@ -80,6 +80,13 @@ def main() -> None:
         help="Cache folder",
         default=path.join("data", ".cache"),
     )
+    extract_parser.add_argument(
+        "--cache-ttl",
+        type=int,
+        dest="cache_ttl_seconds",
+        help="Cache time to live in secods",
+        default=3600 * 24 * 7,
+    )
 
     # Add generate-task subcommand
     generate_task_parser = subparsers.add_parser(
@@ -150,6 +157,7 @@ def main() -> None:
             tasks_file=args.tasks_file,
             result_folder=args.result_folder,
             cache_folder=args.cache_folder,
+            cache_ttl_seconds=args.cache_ttl_seconds,
         )
         run_extract(extract_config)
     elif args.action == "generate-task":

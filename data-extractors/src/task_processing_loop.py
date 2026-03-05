@@ -1,6 +1,8 @@
 import logging
 
 import time
+
+import requests
 from extraction_task.extraction_task import (
     ExtractionTask,
     ExtractionTaskType,
@@ -37,6 +39,9 @@ class TaskProcessingLoop:
         self._extractor = extractor
 
     def run(self) -> None:
+        public_ip = get_my_public_ip()
+        logger.info("Public IP: " + public_ip)
+
         while True:
             logger.info("Attempting to acquire a task for %s", self._social_network)
             task = self._task_service.acquire_next_task(self._social_network)
@@ -79,3 +84,8 @@ class TaskProcessingLoop:
         elif task.type == ExtractionTaskType.EXTRACT_POST_DETAILS:
             assert isinstance(task.task_config, ExtractPostDetailsTaskConfig)
             return self._extractor.extract_post_details(task.task_config)
+
+
+def get_my_public_ip() -> str:
+    response = requests.get("https://api4.my-ip.io/v2/ip.json")
+    return response.json()["ip"]
