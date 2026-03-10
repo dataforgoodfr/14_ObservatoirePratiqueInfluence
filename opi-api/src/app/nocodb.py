@@ -1,7 +1,7 @@
 """Generic NocoDB client for upserting records."""
 
 import logging
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict, Unpack
 from urllib.parse import quote
 
 import requests
@@ -16,6 +16,13 @@ class NocoRecord(TypedDict):
 
     id: str
     fields: dict[str, Any]
+
+
+class RequestKwargs(TypedDict):
+    """Keyword arguments for requests.request."""
+
+    json: NotRequired[Any]
+    params: NotRequired[dict[str, Any]]
 
 
 class TableNotFoundError(Exception):
@@ -57,7 +64,7 @@ class NocoDBClient:
         method: str,
         endpoint: str,
         timeout: int = 10,
-        **kwargs,
+        **kwargs: Unpack[RequestKwargs],
     ) -> dict[str, Any]:
         """Make an HTTP request to NocoDB API.
 

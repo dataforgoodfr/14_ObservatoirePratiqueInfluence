@@ -1,5 +1,11 @@
-from dataclasses import dataclass
+import logging
 import os
+from os import path
+from typing import Literal, Optional, Self
+
+from pydantic import AliasChoices, BaseModel, Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
@@ -18,25 +24,113 @@ from extraction_task.social_network import SocialNetwork
 from task_processing_loop import TaskProcessingLoop
 
 
-import logging
-from os import path
+class YoutubeSettings(BaseModel):
+    api_key: Optional[str] = Field(
+        default=None, description="youtube api key. Required for youtube extractor."
+    )
 
 
-def create_extractor(
-    social_network: SocialNetwork, cache_folder: str, cache_ttl_seconds: int
-) -> DataExtractor:
+class TiktokSettings(BaseModel):
+    implementation: Literal["V1", "V2"] = Field(
+        default="V2", description="Extractor version to use"
+    )
+
+    ms_token: Optional[str] | Literal["PLAYWRIGHT"] = Field(
+        default="PLAYWRIGHT", description="Extractor v2: how to get ms_token"
+    )
+    headless: bool = Field(
+        default=False, description="Extractor v2: whether to use headless mode."
+    )
+
+
+class ExtractSettings(BaseSettings):
+    """Settings for the extract command."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        nested_model_default_partial_update=True,
+        env_nested_delimiter="__",
+        extra="ignore",
+    )
+
+    social_network: SocialNetwork = Field(
+        validation_alias=AliasChoices("n", "social_network"),
+        default=SocialNetwork.YOUTUBE,
+        description="Social Network",
+    )
+    task_polling_interval: int = Field(
+        default=10, ge=1, description="Task polling interval seconds"
+    )
+    cache_folder: str = Field(
+        default=path.join("data", ".cache"), description="Cache folder"
+    )
+    cache_ttl_seconds: int = Field(
+        default=3600 * 24 * 7, description="Cache time to live in seconds"
+    )
+
+    fs_tasks_file: str = Field(
+        default=path.join("data", "extraction_tasks.csv"),
+        description="FS backend tasks csv file",
+    )
+    fs_result_folder: str = Field(
+        default=path.join("data", "results"), description="FS backend Result folder"
+    )
+
+    youtube: YoutubeSettings = Field(
+        default=YoutubeSettings(), description="Youtube extractor settings"
+    )
+    tiktok: TiktokSettings = Field(
+        default=TiktokSettings(), description="Tiktok extractor settings"
+    )
+
+    @model_validator(mode="after")
+    def check_required(self) -> Self:
+        if self.social_network == "youtube" and self.youtube.api_key is None:
+            raise ValueError('youtube.api_key required when social-network="youtube"')
+        return self
+
+
+def run_extract(config: ExtractSettings) -> None:
+    logging.info("config: %s", config)
+
+    task_service = create_task_service(config)
+
+    extractor = create_extractor(config)
+
+    loop = TaskProcessingLoop(
+        social_network=config.social_network,
+        task_repository=task_service,
+        extractor=extractor,
+        polling_interval=config.task_polling_interval,
+    )
+
+    loop.run()
+
+
+def create_task_service(config: ExtractSettings) -> ExtractionTaskService:
+    task_repository = TaskRepository(config.fs_tasks_file)
+    account_repository = AccountRepository(
+        path.join(config.fs_result_folder, "accounts.csv")
+    )
+    post_repository = PostRepository(path.join(config.fs_result_folder, "posts.csv"))
+    return LocalExtractionTaskService(
+        task_repository, account_repository, post_repository
+    )
+
+
+def create_extractor(config: ExtractSettings) -> DataExtractor:
     extractors = {
         SocialNetwork.INSTAGRAM: lambda: create_instagram_extractor(
-            cache_folder, cache_ttl_seconds
+            config.cache_folder, config.cache_ttl_seconds
         ),
         SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(
-            cache_folder, cache_ttl_seconds
+            config.cache_folder, config.cache_ttl_seconds
         ),
         SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(
-            cache_folder, cache_ttl_seconds
+            config.cache_folder, config.cache_ttl_seconds, config.youtube
         ),
     }
-    return extractors[social_network]()
+    return extractors[config.social_network]()
 
 
 def create_tiktok_extractor(cache_folder: str, cache_ttl_seconds: int) -> DataExtractor:
@@ -60,54 +154,14 @@ def create_instagram_extractor(
 
 
 def create_youtube_extractor(
-    cache_folder: str, cache_ttl_seconds: int
+    cache_folder: str, cache_ttl_seconds: int, youtube_settings: YoutubeSettings
 ) -> YoutubeExtractor:
-    api_key = os.getenv("YOUTUBE_API_KEY")
-    if not api_key:
-        raise Exception("YOUTUBE_API_KEY environment variable is required")
+    assert youtube_settings.api_key is not None
     api_config = YoutubeApiConfig(
-        api_key=api_key,
+        api_key=youtube_settings.api_key,
         cache_config=DiskCacheConfig(
             cache_dir=path.join(cache_folder, "youtube"),
             ttl_seconds=cache_ttl_seconds,
         ),
     )
     return YoutubeExtractor(api_config=api_config)
-
-
-@dataclass
-class ExtractConfig:
-    social_network: SocialNetwork
-    task_polling_interval: int
-    tasks_file: str
-    result_folder: str
-    cache_folder: str
-    cache_ttl_seconds: int
-
-
-def run_extract(config: ExtractConfig) -> None:
-    logging.info("config: %s", config)
-
-    task_repository = TaskRepository(config.tasks_file)
-    account_repository = AccountRepository(
-        path.join(config.result_folder, "accounts.csv")
-    )
-    post_repository = PostRepository(path.join(config.result_folder, "posts.csv"))
-    task_service: ExtractionTaskService = LocalExtractionTaskService(
-        task_repository, account_repository, post_repository
-    )
-
-    extractor = create_extractor(
-        config.social_network,
-        cache_folder=config.cache_folder,
-        cache_ttl_seconds=config.cache_ttl_seconds,
-    )
-
-    loop = TaskProcessingLoop(
-        social_network=config.social_network,
-        task_repository=task_service,
-        extractor=extractor,
-        polling_interval=config.task_polling_interval,
-    )
-
-    loop.run()

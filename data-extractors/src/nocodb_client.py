@@ -8,8 +8,6 @@ from typing import Any, Callable, Optional, TypedDict
 
 import requests
 
-from get_required_env import get_required_env
-
 
 @dataclass
 class NocoDBConfig:
@@ -18,14 +16,6 @@ class NocoDBConfig:
     url: str
     base_id: str
     api_token: str
-
-    @classmethod
-    def from_env(cls) -> "NocoDBConfig":
-        return NocoDBConfig(
-            url=get_required_env("NOCODB_URL"),
-            base_id=get_required_env("NOCODB_BASE_ID"),
-            api_token=get_required_env("NOCODB_API_TOKEN"),
-        )
 
 
 @dataclass

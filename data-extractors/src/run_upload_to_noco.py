@@ -1,10 +1,11 @@
 """Upload results from CSV files to NocoDB."""
 
 import logging
-from dataclasses import dataclass
 from os import path
 
-from get_required_env import get_required_env
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from nocodb_client import (
     CsvValueFieldMapping,
     LinkedIdFieldMapping,
@@ -95,36 +96,69 @@ def post_table_config(post_table_name: str, account_table_name: str) -> TableCon
     )
 
 
-@dataclass
-class UploadToNocoConfig:
-    """Configuration for uploading to NocoDB."""
+class UploadToNocoSettings(BaseSettings):
+    """Settings for the upload-results command."""
 
-    result_folder: str = path.join("data", "results")
-    accounts_csv: str = path.join("data", "results", "accounts.csv")
-    posts_csv: str = path.join("data", "results", "posts.csv")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        nested_model_default_partial_update=True,
+        env_nested_delimiter="__",
+        env_prefix="UPLOAD_",
+        extra="ignore",
+    )
+
+    result_folder: str = Field(
+        default=path.join("data", "results"),
+        description="Result folder containing CSV files",
+    )
+    accounts_csv: str = Field(
+        default=path.join("data", "results", "accounts.csv"),
+        description="Path to the accounts CSV file",
+    )
+    posts_csv: str = Field(
+        default=path.join("data", "results", "posts.csv"),
+        description="Path to the posts CSV file",
+    )
+    nocodb_url: str = Field(
+        description="NocoDB URL",
+    )
+    nocodb_base_id: str = Field(
+        description="NocoDB base ID",
+    )
+    nocodb_api_token: str = Field(
+        description="NocoDB API token",
+    )
+    nocodb_account_table_name: str = Field(
+        description="NocoDB account table name",
+    )
+    nocodb_post_table_name: str = Field(
+        description="NocoDB post table name",
+    )
 
 
-def run_upload_to_noco(config: UploadToNocoConfig) -> None:
+def run_upload_to_noco(config: UploadToNocoSettings) -> None:
     """Upload accounts and posts from CSV to NocoDB.
 
     Args:
         config: Upload configuration
 
     Raises:
-        Exception: If NOCODB_API_TOKEN is not set or files don't exist
+        Exception: If required configuration is not set or files don't exist
     """
     logging.info("config: %s", config)
 
     # Initialize NocoDB client
-    noco_config = NocoDBConfig.from_env()
+    noco_config = NocoDBConfig(
+        url=config.nocodb_url,
+        base_id=config.nocodb_base_id,
+        api_token=config.nocodb_api_token,
+    )
     client = NocoDBClient(noco_config)
 
-    account_table_name = get_required_env("NOCODB_ACCOUNT_TABLE_NAME")
-    post_table_name = get_required_env("NOCODB_POST_TABLE_NAME")
     # Upload accounts first (no dependencies)
     logging.info("Uploading accounts from %s...", config.accounts_csv)
     accounts = client.upsert_from_csv(
-        account_table_config(account_table_name),
+        account_table_config(config.nocodb_account_table_name),
         config.accounts_csv,
     )
     logging.info("Uploaded %d accounts", len(accounts))
@@ -132,7 +166,10 @@ def run_upload_to_noco(config: UploadToNocoConfig) -> None:
     # Upload posts (depends on accounts)
     logging.info("Uploading posts from %s...", config.posts_csv)
     posts = client.upsert_from_csv(
-        post_table_config(post_table_name, account_table_name), config.posts_csv
+        post_table_config(
+            config.nocodb_post_table_name, config.nocodb_account_table_name
+        ),
+        config.posts_csv,
     )
     logging.info("Uploaded %d posts", len(posts))
 
