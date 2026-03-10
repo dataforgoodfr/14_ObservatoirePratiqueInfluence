@@ -1,6 +1,6 @@
 """OPI API models."""
 
-from app.models.socialnetwork import Account, Influencer, Post
+from app.models.socialnetwork import Account, Influencer, Post, SocialNetwork
 from app.models.task import (
     ExtractionTask,
     ExtractionTaskResponse,
@@ -16,4 +16,5 @@ __all__ = [
     "ExtractionTaskType",
     "Influencer",
     "Post",
+    "SocialNetwork",
 ]

@@ -7,7 +7,7 @@ import fastapi
 
 from app._auth import validate_api_key
 from app.db import pool
-from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskStatus
+from app.models import ExtractionTask, ExtractionTaskResponse, ExtractionTaskStatus, SocialNetwork
 
 LOGGER = logging.getLogger(__name__)
 API_KEY = fastapi.Depends(validate_api_key)
@@ -15,6 +15,7 @@ API_KEY = fastapi.Depends(validate_api_key)
 
 async def acquire_available_task(
     api_key: str = API_KEY,
+    social_network: SocialNetwork | None = None,
 ) -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
@@ -23,6 +24,7 @@ async def acquire_available_task(
             SELECT uid
             FROM v1.extraction_task
             WHERE status = 'AVAILABLE'
+            AND ($1::text IS NULL OR social_network = $1::text)
             ORDER BY created_at ASC
             LIMIT 1
         )
@@ -36,7 +38,7 @@ async def acquire_available_task(
 
     async with pool.PGPool.get_connection() as conn:
         try:
-            row = await conn.fetchrow(get_task)
+            row = await conn.fetchrow(get_task, social_network.value if social_network else None)
 
             if row:
                 return ExtractionTaskResponse(
