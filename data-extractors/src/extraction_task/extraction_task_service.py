@@ -2,7 +2,6 @@ from typing import Optional
 
 
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from extraction_task.extraction_task import ExtractionTask
 from extraction_task.extraction_task_result import (
@@ -21,12 +20,12 @@ class ExtractionTaskService(ABC):
 
     @abstractmethod
     def mark_task_completed(
-        self, task_id: UUID, task_result: ExtractionTaskResult
+        self, task: ExtractionTask, task_result: ExtractionTaskResult
     ) -> None:
         print("Abstract method1")
         return None
 
     @abstractmethod
-    def mark_task_failed(self, task_id: UUID, task_error: str) -> None:
+    def mark_task_failed(self, task: ExtractionTask, task_error: str) -> None:
         print("Abstract method1")
         return None
