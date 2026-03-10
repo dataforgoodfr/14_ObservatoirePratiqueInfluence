@@ -3,6 +3,7 @@ from pydantic import AwareDatetime, BaseModel
 
 
 class ExtractPostDetailsTaskConfig(BaseModel):
+    account_id: str
     post_id: str
 
 
@@ -13,7 +14,6 @@ class ExtractPostListTaskConfig(BaseModel):
 
 
 class ExtractAccountTaskConfig(BaseModel):
-    # FIXME this should be an account id rather than a handle
     account_id: str
 
 

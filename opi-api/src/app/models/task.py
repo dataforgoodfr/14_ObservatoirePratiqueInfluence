@@ -9,6 +9,7 @@ from app.models.socialnetwork import SocialNetwork
 
 
 class _ExtractPostDetailsTaskConfig(pydantic.BaseModel):
+    account_id: str
     post_id: str
 
 

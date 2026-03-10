@@ -123,7 +123,8 @@ class LocalExtractionTaskService(ExtractionTaskService):
                             social_network=social_network,
                             type=ExtractionTaskType.EXTRACT_POST_DETAILS,
                             task_config=ExtractPostDetailsTaskConfig(
-                                post_id=post.post_id
+                                account_id=task_config.account_id,
+                                post_id=post.post_id,
                             ),
                             status=ExtractionTaskStatus.AVAILABLE,
                             error=None,
@@ -136,6 +137,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
             self._post_repository.upsert_post_details(
                 PostDetails(
                     social_network=social_network,
+                    account_id=task_config.account_id,
                     post_id=task_config.post_id,
                     post_extraction_date=task_result.data_extraction_date,
                     post_url=task_result.post_url,
