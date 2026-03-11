@@ -3,12 +3,16 @@ import datetime
 import logging
 import uuid
 from os import path
-from typing import Literal
+from typing import Literal, Optional, Self
 from urllib.parse import urlparse
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from api_client import api_client
+from api_client.api.default_api import DefaultApi
+from default_api_backend_url import default_api_backend_url
+from extraction_task.api.mappings import to_api_extractions_tasks
 from extraction_task.extraction_task import (
     ExtractionTask,
     ExtractionTaskStatus,
@@ -42,31 +46,61 @@ class GenerateTaskSettings(BaseSettings):
         default=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc),
         description="End date for post list extraction in YYYY-MM-DD format",
     )
-    replace: bool = Field(
-        default=True, description="Whether to replace existing tasks or append to them"
-    )
+
     urls_file: str = Field(
         default=path.join("data", "account_urls.csv"),
         description="Path to the input CSV file with account URLs",
     )
-    tasks_file: str = Field(
-        default=path.join("data", "extraction_tasks.csv"),
-        description="Path to the output CSV file for extraction tasks",
+
+    backend: Literal["fs", "api"] = Field(
+        default="api",
+        description="Configure whether to use filesystem or server for tasks storage",
     )
+
+    api_url: str = Field(
+        default=default_api_backend_url,
+        description="API backend url. Required when backend=api.",
+    )
+
+    api_key: Optional[str] = Field(
+        default=None,
+        description="API backend auth token. Required when backend=api.",
+    )
+
+    fs_replace: bool = Field(
+        default=False,
+        description="When using fs backend. Whether to replace existing tasks or append to them",
+    )
+    fs_tasks_file: str = Field(
+        default=path.join("data", "extraction_tasks.csv"),
+        description="FS backend tasks csv file",
+    )
+
+    @model_validator(mode="after")
+    def check_required(self) -> Self:
+        if self.backend == "api" and self.api_key is None:
+            raise ValueError('api_key required when backend="api"')
+        return self
 
 
 def run_generate_task(config: GenerateTaskSettings) -> None:
     logging.info("config: %s", config)
 
-    generate_tasks_from_accounts(
+    tasks = generate_tasks_from_accounts(
         account_urls_file=config.urls_file,
-        tasks_csv_file=config.tasks_file,
         task_type=config.task_type,
         published_after=config.published_after,
         published_before=config.published_before,
-        replace=config.replace,
     )
-    print(f"Successfully generated {config.tasks_file}")
+    print(f"{len(tasks)} tasks generated.")
+
+    if config.backend == "fs":
+        print(f"Storing tasks to {config.fs_tasks_file} - replace: {config.fs_replace}")
+        store_tasks_to_csv(tasks, config.fs_tasks_file, config.fs_replace)
+    else:
+        assert config.api_key is not None
+        print(f"Storing tasks to api {config.api_url}")
+        store_tasks_using_api(tasks, config.api_url, config.api_key)
 
 
 def extract_network_and_account_id(url: str) -> tuple[SocialNetwork, str]:
@@ -88,12 +122,10 @@ def extract_network_and_account_id(url: str) -> tuple[SocialNetwork, str]:
 
 def generate_tasks_from_accounts(
     account_urls_file: str,
-    tasks_csv_file: str,
     task_type: Literal["all", "account", "post-list"],
     published_after: datetime.datetime,
     published_before: datetime.datetime,
-    replace: bool,
-) -> None:
+) -> list[ExtractionTask]:
     """
     Generate extraction tasks from account URLs.
 
@@ -148,8 +180,23 @@ def generate_tasks_from_accounts(
             )
             tasks.append(post_list_task)
 
+    return tasks
+
+
+def store_tasks_to_csv(
+    tasks: list[ExtractionTask], tasks_csv_file: str, replace: bool
+) -> None:
     repo = TaskRepository(tasks_csv_file=tasks_csv_file)
     if replace:
         repo.replace_all(tasks)
     else:
         repo.append_all(tasks)
+
+
+def store_tasks_using_api(
+    tasks: list[ExtractionTask], api_url: str, api_token: str
+) -> None:
+    configuration = api_client.Configuration(access_token=api_token, host=api_url)
+    client = api_client.ApiClient(configuration=configuration)
+    api = DefaultApi(client)
+    api.register_tasks_extraction_task_post(to_api_extractions_tasks(tasks))

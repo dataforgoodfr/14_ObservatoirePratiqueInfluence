@@ -20,6 +20,7 @@ class PostListItem(BaseModel):
 class PostDetails(BaseModel):
     social_network: social_network.SocialNetwork
     post_id: str
+    account_id: str
     post_extraction_date: Optional[AwareDatetime]
     post_url: Optional[str]
     title: Optional[str]

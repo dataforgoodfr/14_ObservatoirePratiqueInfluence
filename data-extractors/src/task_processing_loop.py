@@ -62,7 +62,7 @@ class TaskProcessingLoop:
                         "Task with id %s completed - Marking as completed",
                         task.id,
                     )
-                    self._task_service.mark_task_completed(task.id, result)
+                    self._task_service.mark_task_completed(task, result)
                 except KeyboardInterrupt as kb:
                     raise kb
                 except Exception as e:
@@ -72,7 +72,7 @@ class TaskProcessingLoop:
                         task.id,
                         error_message,
                     )
-                    self._task_service.mark_task_failed(task.id, error_message)
+                    self._task_service.mark_task_failed(task, error_message)
 
     def execute_task(self, task: ExtractionTask) -> ExtractionTaskResult:
         if task.type == ExtractionTaskType.EXTRACT_ACCOUNT:
