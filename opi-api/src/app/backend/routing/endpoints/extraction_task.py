@@ -19,7 +19,7 @@ async def acquire_available_task(
 ) -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
-        SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '15 minutes'
+        SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '120 minutes'
         WHERE uid = (
             SELECT uid
             FROM v1.extraction_task
