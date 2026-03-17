@@ -2,11 +2,12 @@ import asyncio
 from collections import defaultdict
 import datetime
 import logging
-import os
 import random
+from typing import Literal
 from playwright.async_api import async_playwright
 
 from TikTokApi import TikTokApi
+from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)
@@ -103,20 +104,23 @@ async def get_videos_for_date_range(
     raise Exception("With reached the max_videos defined!!!")
 
 
-async def create_sessions(api: TikTokApi) -> None:
-    env_ms_token = os.getenv("TIKTOK_MS_TOKEN")
-    headless = os.getenv("TIKTOK_HEADLESS", "False").lower() == "true"
-    if env_ms_token is None:
+class TikTokApiConfig(BaseModel):
+    ms_token: Literal["playwright"] | str | None
+    headless: bool
+
+
+async def create_sessions(api: TikTokApi, config: TikTokApiConfig) -> None:
+    if config.ms_token is None:
         ms_tokens = None
-    elif env_ms_token.lower() == "playwright":
+    elif config.ms_token.lower() == "playwright":
         ms_tokens = await get_ms_tokens()
     else:
-        ms_tokens = [env_ms_token]
+        ms_tokens = [config.ms_token]
     await api.create_sessions(
         ms_tokens=ms_tokens,
         num_sessions=1,
         sleep_after=3,
         timeout=60000,
         browser="chromium",
-        headless=headless,
+        headless=config.headless,
     )

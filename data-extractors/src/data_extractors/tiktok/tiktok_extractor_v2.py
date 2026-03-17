@@ -10,6 +10,7 @@ import diskcache
 
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.tiktok.tiktokapi import (
+    TikTokApiConfig,
     create_sessions,
     get_videos_for_date_range,
 )
@@ -33,6 +34,7 @@ class TiktokExtractorV2(DataExtractor):
         self,
         cache_folder: str,
         cache_ttl_seconds: int,
+        api_config: TikTokApiConfig,
         write_raw_data_to_disk: bool = False,
     ) -> None:
         self.cache = diskcache.Cache(
@@ -44,6 +46,7 @@ class TiktokExtractorV2(DataExtractor):
         if write_raw_data_to_disk:
             self.raw_data_folder = Path(path.join(cache_folder, "raw_data"))
             self.raw_data_folder.mkdir(parents=True, exist_ok=True)
+        self.api_config = api_config
 
     def extract_account(
         self,
@@ -57,7 +60,7 @@ class TiktokExtractorV2(DataExtractor):
     ) -> AccountExtractionResult:
         try:
             async with TikTokApi() as api:
-                await create_sessions(api)
+                await create_sessions(api, self.api_config)
                 user_data = await api.user(username=task_config.account_id).info()
                 self._write_user_dict_to_disk(task_config.account_id, user_data)
 
@@ -102,7 +105,7 @@ class TiktokExtractorV2(DataExtractor):
 
         try:
             async with TikTokApi() as api:
-                await create_sessions(api)
+                await create_sessions(api, self.api_config)
 
                 user = api.user(username=task_config.account_id)
                 videos = await get_videos_for_date_range(
@@ -171,7 +174,7 @@ class TiktokExtractorV2(DataExtractor):
                 return cached_value
 
             async with TikTokApi() as api:
-                await create_sessions(api)
+                await create_sessions(api, self.api_config)
                 user_agnostic_video_url = (
                     f"https://www.tiktok.com/@tiktok/video/{video_id}"
                 )

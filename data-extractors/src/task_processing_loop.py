@@ -32,16 +32,18 @@ class TaskProcessingLoop:
         social_network: SocialNetwork,
         extractor: DataExtractor,
         polling_interval: int,
+        exit_after_tasks_failure: bool | int,
     ):
         self._social_network = social_network
         self._task_service = task_repository
         self._polling_interval = polling_interval
         self._extractor = extractor
+        self._exit_after_tasks_failure = exit_after_tasks_failure
 
     def run(self) -> None:
         public_ip = get_my_public_ip()
         logger.info("Public IP: " + public_ip)
-
+        failure_count = 0
         while True:
             logger.info("Attempting to acquire a task for %s", self._social_network)
             task = self._task_service.acquire_next_task(self._social_network)
@@ -73,6 +75,15 @@ class TaskProcessingLoop:
                         error_message,
                     )
                     self._task_service.mark_task_failed(task, error_message)
+                    failure_count += 1
+                    if (
+                        isinstance(self._exit_after_tasks_failure, bool)
+                        and self._exit_after_tasks_failure
+                    ) or (
+                        isinstance(self._exit_after_tasks_failure, int)
+                        and self._exit_after_tasks_failure <= failure_count
+                    ):
+                        raise e
 
     def execute_task(self, task: ExtractionTask) -> ExtractionTaskResult:
         if task.type == ExtractionTaskType.EXTRACT_ACCOUNT:

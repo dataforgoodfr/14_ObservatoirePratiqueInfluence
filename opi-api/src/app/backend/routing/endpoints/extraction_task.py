@@ -19,13 +19,16 @@ async def acquire_available_task(
 ) -> ExtractionTaskResponse:
     get_task = """
         UPDATE v1.extraction_task
-        SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '15 minutes'
+        SET status = 'ACQUIRED', visible_at = NOW() + INTERVAL '120 minutes'
         WHERE uid = (
             SELECT uid
             FROM v1.extraction_task
             WHERE status = 'AVAILABLE'
             AND ($1::text IS NULL OR social_network = $1::text)
-            ORDER BY created_at ASC
+            ORDER BY
+                -- Make extract-post-details higher priority
+                case type when 'extract-post-details' then 0 else 1 end ASC,
+                created_at ASC
             LIMIT 1
         )
         RETURNING uid
