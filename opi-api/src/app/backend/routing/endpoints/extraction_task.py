@@ -25,7 +25,10 @@ async def acquire_available_task(
             FROM v1.extraction_task
             WHERE status = 'AVAILABLE'
             AND ($1::text IS NULL OR social_network = $1::text)
-            ORDER BY created_at ASC
+            ORDER BY
+                -- Make extract-post-details higher priority
+                case type when 'extract-post-details' then 0 else 1 end ASC,
+                created_at ASC
             LIMIT 1
         )
         RETURNING uid
