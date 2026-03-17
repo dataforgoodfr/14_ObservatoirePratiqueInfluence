@@ -59,11 +59,12 @@ def account_table_config(account_table_name: str) -> TableConfig:
     )
 
 
-def post_table_config(post_table_name: str, account_table_name: str) -> TableConfig:
+def post_table_config(
+    post_table_name: str, account_table_name: str, account_field_name: str
+) -> TableConfig:
     return TableConfig(
         table_name=post_table_name,
         data_field_mappings={
-            "Social Network": CsvValueFieldMapping("social_network"),
             "Post Id": CsvValueFieldMapping("post_id"),
             # "PostExtractionDate": CsvValueFieldMapping("post_extraction_date"),
             "Post Url": CsvValueFieldMapping("post_url"),
@@ -85,7 +86,7 @@ def post_table_config(post_table_name: str, account_table_name: str) -> TableCon
         },
         logical_id_fields=["Post Id"],
         linked_field_mappings={
-            "Account": LinkedIdFieldMapping(
+            account_field_name: LinkedIdFieldMapping(
                 target_table=account_table_name,
                 lookup={
                     "Social Network": CsvValueFieldMapping("social_network"),
@@ -119,6 +120,14 @@ class UploadToNocoSettings(BaseSettings):
         default=path.join("data", "results", "posts.csv"),
         description="Path to the posts CSV file",
     )
+    accounts_skip_rows: int = Field(
+        default=0,
+        description="Skip rows from accounts csv",
+    )
+    posts_skip_rows: int = Field(
+        default=0,
+        description="Skip rows from post csv",
+    )
     nocodb_url: str = Field(
         description="NocoDB URL",
     )
@@ -133,6 +142,10 @@ class UploadToNocoSettings(BaseSettings):
     )
     nocodb_post_table_name: str = Field(
         description="NocoDB post table name",
+    )
+    nocodb_account_field_name: str = Field(
+        default="Account",
+        description="NocoDB post table account field name",
     )
 
 
@@ -160,6 +173,7 @@ def run_upload_to_noco(config: UploadToNocoSettings) -> None:
     accounts = client.upsert_from_csv(
         account_table_config(config.nocodb_account_table_name),
         config.accounts_csv,
+        skip_rows=config.accounts_skip_rows,
     )
     logging.info("Uploaded %d accounts", len(accounts))
 
@@ -167,9 +181,12 @@ def run_upload_to_noco(config: UploadToNocoSettings) -> None:
     logging.info("Uploading posts from %s...", config.posts_csv)
     posts = client.upsert_from_csv(
         post_table_config(
-            config.nocodb_post_table_name, config.nocodb_account_table_name
+            config.nocodb_post_table_name,
+            config.nocodb_account_table_name,
+            config.nocodb_account_field_name,
         ),
         config.posts_csv,
+        skip_rows=config.posts_skip_rows,
     )
     logging.info("Uploaded %d posts", len(posts))
 

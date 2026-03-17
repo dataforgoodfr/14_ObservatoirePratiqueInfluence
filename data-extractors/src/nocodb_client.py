@@ -156,9 +156,7 @@ class NocoDBClient:
         return records[0]
 
     def upsert_from_csv(
-        self,
-        table_config: TableConfig,
-        csv_path: str,
+        self, table_config: TableConfig, csv_path: str, skip_rows: int = 0
     ) -> list[NocoRecord]:
         """Upsert records from a CSV file to NocoDB.
 
@@ -180,6 +178,8 @@ class NocoDBClient:
             rows = list(reader)
             row_count = len(rows)
             for i, row in enumerate(rows):
+                if i < skip_rows:
+                    continue
                 try:
                     logger.info(
                         "Upserting record %s / %s from csv %s",
