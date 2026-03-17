@@ -13,6 +13,8 @@ dependencies = [
     "instaloader>=v4.15",
     "diskcache",
     "tiktokapi>=7.3.0",
+    "python-dateutil>=2.9.0.post0",
+    "typing-extensions>=4.15.0",
 ]
 
 [tool.mypy]
@@ -20,8 +22,16 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
+# ignore errors in generated api_client
+module = "api_client.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
 module = ["TikTokApi", "diskcache"]
 follow_untyped_imports = true
+
+[tool.ruff]
+exclude = ["src/api_client"]
 
 [dependency-groups]
 dev = [
