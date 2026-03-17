@@ -12,6 +12,7 @@ from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
 from data_extractors.tiktok.tiktok_extractor_v2 import TiktokExtractorV2
+from data_extractors.tiktok.tiktokapi import TikTokApiConfig
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
@@ -70,6 +71,11 @@ class ExtractSettings(BaseSettings):
         default=3600 * 24 * 7, description="Cache time to live in seconds"
     )
 
+    exit_after_task_failure: bool | int = Field(
+        default=True,
+        description="Configure if exti after task failure: True|False or number of failure before exit",
+    )
+
     backend: Literal["fs", "api"] = Field(
         default="api",
         description="Configure whether to use filesystem or server to acquire tasks and store results",
@@ -121,6 +127,7 @@ def run_extract(config: ExtractSettings) -> None:
         task_repository=task_service,
         extractor=extractor,
         polling_interval=config.task_polling_interval,
+        exit_after_tasks_failure=config.exit_after_task_failure,
     )
 
     loop.run()
@@ -149,7 +156,7 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
             config.cache_folder, config.cache_ttl_seconds
         ),
         SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(
-            config.cache_folder, config.cache_ttl_seconds
+            config.cache_folder, config.cache_ttl_seconds, config.tiktok
         ),
         SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(
             config.cache_folder, config.cache_ttl_seconds, config.youtube
@@ -158,7 +165,9 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
     return extractors[config.social_network]()
 
 
-def create_tiktok_extractor(cache_folder: str, cache_ttl_seconds: int) -> DataExtractor:
+def create_tiktok_extractor(
+    cache_folder: str, cache_ttl_seconds: int, settings: TiktokSettings
+) -> DataExtractor:
     if os.getenv("TIKTOK_EXTRACTOR") == "V1":
         return TiktokExtractor()
     else:
@@ -166,6 +175,9 @@ def create_tiktok_extractor(cache_folder: str, cache_ttl_seconds: int) -> DataEx
         return TiktokExtractorV2(
             cache_folder=path.join(cache_folder, "tiktok"),
             cache_ttl_seconds=cache_ttl_seconds,
+            api_config=TikTokApiConfig(
+                headless=settings.headless, ms_token=settings.ms_token
+            ),
         )
 
 
