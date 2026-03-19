@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 180 180" width="200" height="200">
+  <defs>
+    <clipPath id="circle-clip">
+      <circle cx="100" cy="100" r="90"/>
+    </clipPath>
+  </defs>
+  
+  <g clip-path="url(#circle-clip)">
+    <!-- Cercle noir -->
+    <circle cx="100" cy="100" r="90" fill="oklch(0.24 0.043 244)"/>
+    
+    <!-- Lettres PTI - italique + légère diagonale montante gauche à droite -->
+    <g fill="#ffffff" transform="rotate(-8, 100, 100)">
+      <!-- P - italique via skewX -->
+      <g transform="translate(58, 68) skewX(-10)">
+        <path d="
+          M 0,0 
+          L 0,64 
+          L 4.5,64 
+          L 4.5,37 
+          L 12,37 
+          C 21,37 25,32 25,25 
+          L 25,12 
+          C 25,5 21,0 12,0 
+          Z
+          M 4.5,4.5 
+          L 11,4.5 
+          C 17.5,4.5 20,7 20,12 
+          L 20,25 
+          C 20,30 17.5,32.5 11,32.5 
+          L 4.5,32.5 
+          Z
+        " fill-rule="evenodd"/>
+      </g>
+      
+      <!-- T - italique via skewX -->
+      <g transform="translate(86, 68) skewX(-10)">
+        <path d="
+          M 0,0 
+          L 0,4.5 
+          L 11.5,4.5 
+          L 11.5,64 
+          L 16,64 
+          L 16,4.5 
+          L 27.5,4.5 
+          L 27.5,0 
+          Z
+        "/>
+      </g>
+      
+      <!-- I - italique via skewX -->
+      <g transform="translate(120, 68) skewX(-10)">
+        <path d="
+          M 0,0 
+          L 0,64 
+          L 4.5,64 
+          L 4.5,0 
+          Z
+        "/>
+      </g>
+    </g>
+  </g>
+</svg>
