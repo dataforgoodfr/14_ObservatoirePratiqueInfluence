@@ -51,3 +51,9 @@ router.add_api_route(
     methods=["POST"],
     description="Upsert accounts data",
 )
+router.add_api_route(
+    "/extraction-task/stats",
+    endpoint=extraction_task.get_extraction_task_stats,
+    methods=["GET"],
+    description="Get statistics on extraction tasks with optional filters",
+)
