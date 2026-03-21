@@ -22,6 +22,12 @@ router.add_api_route(
     description="Recycle all failed tasks back to available status",
 )
 router.add_api_route(
+    "/extraction-task/recycle-expired",
+    endpoint=extraction_task.recycle_expired_tasks,
+    methods=["POST"],
+    description="Recycle all acquired tasks that have passed their acquisition limit",
+)
+router.add_api_route(
     "/extraction-task/{task_uid}",
     endpoint=extraction_task.update_task,
     methods=["PATCH"],

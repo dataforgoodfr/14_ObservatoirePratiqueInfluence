@@ -117,6 +117,40 @@ async def recycle_failed_tasks(
             raise
 
 
+class RecycleExpiredTasksResponse(pydantic.BaseModel):
+    """Response model for recycle expired tasks endpoint."""
+
+    recycled_count: int
+
+
+async def recycle_expired_tasks(
+    api_key: str = API_KEY,
+) -> RecycleExpiredTasksResponse:
+    """Recycle all acquired tasks that have passed their acquisition limit.
+
+    This endpoint finds all tasks with status 'ACQUIRED' where visible_at < NOW()
+    (meaning the acquisition time has expired) and updates them to 'AVAILABLE' status,
+    making them available for acquisition again. The visible_at is set to NULL so they
+    become immediately available.
+    """
+    recycle_tasks = """
+        UPDATE v1.extraction_task
+        SET status = 'AVAILABLE'
+            , visible_at = NULL
+        WHERE status = 'ACQUIRED'
+            AND visible_at < NOW()
+        RETURNING uid
+    """
+
+    async with pool.PGPool.get_connection() as conn:
+        try:
+            rows = await conn.fetch(recycle_tasks)
+            return RecycleExpiredTasksResponse(recycled_count=len(rows))
+        except Exception:
+            LOGGER.exception("Error recycling expired tasks")
+            raise
+
+
 async def register_tasks(
     extraction_tasks: list[ExtractionTask],
     api_key: str = API_KEY,
