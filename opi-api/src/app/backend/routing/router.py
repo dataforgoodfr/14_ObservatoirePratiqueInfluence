@@ -16,6 +16,12 @@ router.add_api_route(
     description="Get available task and switch its status to acquired",
 )
 router.add_api_route(
+    "/extraction-task/recycle-failed",
+    endpoint=extraction_task.recycle_failed_tasks,
+    methods=["POST"],
+    description="Recycle all failed tasks back to available status",
+)
+router.add_api_route(
     "/extraction-task/{task_uid}",
     endpoint=extraction_task.update_task,
     methods=["PATCH"],

@@ -4,6 +4,7 @@ import uuid
 from http import HTTPStatus
 
 import fastapi
+import pydantic
 
 from app._auth import validate_api_key
 from app.db import pool
@@ -79,6 +80,40 @@ async def update_task(
         except Exception:
             message = f"Error updating task {task_uid}"
             LOGGER.exception(message)
+            raise
+
+
+class RecycleFailedTasksResponse(pydantic.BaseModel):
+    """Response model for recycle failed tasks endpoint."""
+
+    recycled_count: int
+
+
+async def recycle_failed_tasks(
+    api_key: str = API_KEY,
+) -> RecycleFailedTasksResponse:
+    """Recycle all failed tasks back to available status.
+
+    This endpoint finds all tasks with status 'FAILED' and updates them to
+    'AVAILABLE' status, making them available for acquisition again.
+    The visible_at is set to NULL so they become immediately available.
+    The error field is also cleared.
+    """
+    recycle_tasks = """
+        UPDATE v1.extraction_task
+        SET status = 'AVAILABLE'
+            , visible_at = NULL
+            , error = NULL
+        WHERE status = 'FAILED'
+        RETURNING uid
+    """
+
+    async with pool.PGPool.get_connection() as conn:
+        try:
+            rows = await conn.fetch(recycle_tasks)
+            return RecycleFailedTasksResponse(recycled_count=len(rows))
+        except Exception:
+            LOGGER.exception("Error recycling failed tasks")
             raise
 
 
