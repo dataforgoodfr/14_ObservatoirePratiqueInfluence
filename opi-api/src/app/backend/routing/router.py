@@ -28,10 +28,17 @@ router.add_api_route(
     description="Recycle all acquired tasks that have passed their acquisition limit",
 )
 router.add_api_route(
-    "/extraction-task/{task_uid}",
-    endpoint=extraction_task.update_task,
-    methods=["PATCH"],
-    description="Update existing tasks",
+    "/extraction-task/{task_uid}/mark-failed/",
+    endpoint=extraction_task.mark_failed,
+    methods=["POST"],
+    description="Mark Failed",
+)
+
+router.add_api_route(
+    "/extraction-task/{task_uid}/mark-completed",
+    endpoint=extraction_task.mark_completed,
+    methods=["POST"],
+    description="Mark Completed",
 )
 router.add_api_route(
     "/extraction-task/",

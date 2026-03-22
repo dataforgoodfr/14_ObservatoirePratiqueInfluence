@@ -64,23 +64,56 @@ async def acquire_available_task(
             raise
 
 
-async def update_task(
+async def mark_completed(
     task_uid: uuid.UUID,
-    status: ExtractionTaskStatus,
     api_key: str = API_KEY,
 ) -> fastapi.Response:
     update_task = """
         UPDATE v1.extraction_task
-        SET status = $2
+        SET status = 'COMPLETED'
             , visible_at = NULL
         WHERE uid = $1
             AND visible_at > NOW()
+            AND status = 'ACQUIRED'
         ;
     """
 
     async with pool.PGPool.get_connection() as conn:
         try:
-            await conn.execute(update_task, task_uid, status)
+            await conn.execute(update_task, task_uid)
+            return fastapi.Response(status_code=HTTPStatus.NO_CONTENT)
+
+        except Exception:
+            message = f"Error updating task {task_uid}"
+            LOGGER.exception(message)
+            raise
+
+
+class MarkFailedPayload(pydantic.BaseModel):
+    """Payload for MarkFailed endpoint."""
+
+    error: str | None
+
+
+async def mark_failed(
+    task_uid: uuid.UUID,
+    payload: MarkFailedPayload,
+    api_key: str = API_KEY,
+) -> fastapi.Response:
+    update_task = """
+        UPDATE v1.extraction_task
+        SET status = 'FAILED'
+            , visible_at = NULL
+            , error = $2
+        WHERE uid = $1
+            AND visible_at > NOW()
+            AND status = 'ACQUIRED'
+        ;
+    """
+
+    async with pool.PGPool.get_connection() as conn:
+        try:
+            await conn.execute(update_task, task_uid, payload.error)
             return fastapi.Response(status_code=HTTPStatus.NO_CONTENT)
 
         except Exception:
@@ -320,7 +353,7 @@ async def get_extraction_task_stats(
         WHERE {where_clause}
         GROUP BY type
         ORDER BY type
-    """ # noqa: S608 - where_clause is safe
+    """  # noqa: S608 - where_clause is safe
 
     # Query for global stats - count per network
     network_query = f"""
@@ -329,7 +362,7 @@ async def get_extraction_task_stats(
         WHERE {where_clause}
         GROUP BY social_network
         ORDER BY social_network
-    """ # noqa: S608 - where_clause is safe
+    """  # noqa: S608 - where_clause is safe
 
     # Query for detailed stats - count per combination of type, network, and extended status
     detailed_query = f"""
@@ -346,7 +379,7 @@ async def get_extraction_task_stats(
         WHERE {where_clause}
         GROUP BY type, social_network, extended_status
         ORDER BY type, social_network, extended_status
-    """ # noqa: S608 - where_clause is safe
+    """  # noqa: S608 - where_clause is safe
 
     async with pool.PGPool.get_connection() as conn:
         try:
