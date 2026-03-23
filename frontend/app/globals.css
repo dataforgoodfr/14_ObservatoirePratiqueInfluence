@@ -38,6 +38,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-highlight: var(--highlight);
+  --color-background-impact: var(--background-impact);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -47,15 +49,40 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@utility background-secondary {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 20% 50%,
+      var(--background-secondary-deep),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 80% 30%,
+      var(--background-secondary-ocean),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 50% 50% at 60% 80%,
+      var(--background-secondary-horizon),
+      transparent
+    ),
+    var(--background-secondary-deep);
+}
+
 :root {
+  --background-secondary-deep: oklch(0.24 0.043 244);
+  --background-secondary-ocean: oklch(0.33 0.059 241);
+  --background-secondary-horizon: oklch(0.39 0.072 240);
+  --background-impact: oklch(0.96 0.012 244);
+  --highlight: oklch(0.78 0.128 57);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.32 0.07 230);
+  --primary-foreground: oklch(0.97 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
