@@ -23,13 +23,8 @@ from extraction_task.api.mappings import (
 )
 
 from api_client.models import (
-    ExtractionTaskType as ApiExtractionTaskType,
-    ExtractionTaskStatus as ApiExtractionTaskStatus,
     Account,
-    Post,
-    ExtractionTask as ApiExtractionTask,
-    ExtractPostDetailsTaskConfig,
-    TaskConfig,
+    Post as ApiPost,
     MarkFailedPayload,
 )
 
@@ -73,20 +68,23 @@ class ApiExtractionTaskService(ExtractionTaskService):
         self, task: ExtractionTask, task_result: ExtractionTaskResult
     ) -> None:
         """Mark a task as completed and process the result."""
-        social_network = task.social_network
 
         # Handle different task types
         if isinstance(task_result, AccountExtractionResult):
             assert isinstance(task.task_config, DomainExtractAccountTaskConfig)
-            self._upsert_account(task_result, task.task_config, social_network)
+            self._upsert_account(
+                task_result, task.task_config.account_id, task.social_network
+            )
         elif isinstance(task_result, PostListExtractionResult):
             assert isinstance(task.task_config, DomainExtractPostListTaskConfig)
-            self._create_post_detail_tasks(
-                task_result, task.task_config, social_network
+            self._upsert_posts(
+                task_result.posts, task.task_config.account_id, task.social_network
             )
         elif isinstance(task_result, PostDetailsExtractionResult):
             assert isinstance(task.task_config, DomainExtractPostDetailsTaskConfig)
-            self._upsert_post(task_result, task.task_config, social_network)
+            self._upsert_posts(
+                [task_result], task.task_config.account_id, task.social_network
+            )
         else:
             raise ValueError(f"Unknown task result type: {type(task_result)}")
 
@@ -98,14 +96,14 @@ class ApiExtractionTaskService(ExtractionTaskService):
     def _upsert_account(
         self,
         task_result: AccountExtractionResult,
-        task_config: DomainExtractAccountTaskConfig,
-        social_network: DomainSocialNetwork,
+        account_id: str,
+        social_network: str,
     ) -> None:
         """Upsert account data to the API."""
         account = Account(
             account_extracted_at=task_result.data_extraction_date,
-            account_id=task_config.account_id,
-            social_network=social_network.value,
+            account_id=account_id,
+            social_network=social_network,
             handle=task_result.handle,
             description=task_result.description,
             follower_count=task_result.follower_count,
@@ -117,9 +115,6 @@ class ApiExtractionTaskService(ExtractionTaskService):
         )
 
         self._api.upsert_accounts_accounts_post([account])
-
-    # Use shared mapping functions from extraction_task.mappings
-    # _to_domain_social_network, _to_api_social_network, _to_domain_task_type, _to_api_task_type
 
     def _parse_task_config(
         self, task_type: ExtractionTaskType, config_dict: dict
@@ -134,59 +129,36 @@ class ApiExtractionTaskService(ExtractionTaskService):
         else:
             raise ValueError(f"Unknown task type: {task_type}")
 
-    def _create_post_detail_tasks(
+    def _upsert_posts(
         self,
-        task_result: PostListExtractionResult,
-        task_config: DomainExtractPostListTaskConfig,
-        social_network: DomainSocialNetwork,
-    ) -> None:
-        """Create post detail tasks for each post in the list."""
-        new_tasks: list[ApiExtractionTask] = []
-        for post in task_result.posts:
-            task = ApiExtractionTask(
-                social_network=to_api_social_network(social_network),
-                type=ApiExtractionTaskType.EXTRACT_MINUS_POST_MINUS_DETAILS,
-                task_config=TaskConfig(
-                    ExtractPostDetailsTaskConfig(
-                        account_id=task_config.account_id,
-                        post_id=post.post_id,
-                    )
-                ),
-                status=ApiExtractionTaskStatus.AVAILABLE,
-            )
-            new_tasks.append(task)
-
-        self._api.register_tasks_extraction_task_post(new_tasks)
-
-    def _upsert_post(
-        self,
-        task_result: PostDetailsExtractionResult,
-        task_config: DomainExtractPostDetailsTaskConfig,
+        post_details_list: list[PostDetailsExtractionResult],
+        account_id: str,
         social_network: DomainSocialNetwork,
     ) -> None:
         """Upsert post data to the API."""
-        # Note: task_config may not have account_id in the current domain model
-        # This is a pre-existing issue in the codebase
 
-        post = Post(
-            post_extracted_at=task_result.data_extraction_date,
-            social_network=social_network.value,
-            account_id=task_config.account_id,
-            post_id=task_config.post_id,
-            post_url=task_result.post_url,
-            title=task_result.title,
-            description=task_result.description,
-            comment_count=task_result.comment_count,
-            view_count=task_result.view_count,
-            repost_count=task_result.repost_count,
-            like_count=task_result.like_count,
-            share_count=task_result.share_count,
-            categories=task_result.categories,
-            tags=task_result.tags,
-            sn_has_paid_placement=task_result.sn_has_paid_placement,
-            sn_brand=task_result.sn_brand,
-            post_type=task_result.post_type,
-            text_content=task_result.text_content,
-        )
+        api_posts: list[ApiPost] = [
+            ApiPost(
+                post_extracted_at=post_details.data_extraction_date,
+                social_network=social_network,
+                account_id=account_id,
+                post_id=post_details.post_id,
+                post_url=post_details.post_url,
+                title=post_details.title,
+                description=post_details.description,
+                comment_count=post_details.comment_count,
+                view_count=post_details.view_count,
+                repost_count=post_details.repost_count,
+                like_count=post_details.like_count,
+                share_count=post_details.share_count,
+                categories=post_details.categories,
+                tags=post_details.tags,
+                sn_has_paid_placement=post_details.sn_has_paid_placement,
+                sn_brand=post_details.sn_brand,
+                post_type=post_details.post_type,
+                text_content=post_details.text_content,
+            )
+            for post_details in post_details_list
+        ]
 
-        self._api.upsert_posts_posts_post([post])
+        self._api.upsert_posts_posts_post(api_posts)

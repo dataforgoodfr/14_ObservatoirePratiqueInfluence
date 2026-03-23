@@ -109,6 +109,7 @@ class YoutubeApiClient:
         self._disk_cache = DiskCache(config=config.cache_config)
 
     def get_channel_by_id(self, id: str) -> Channel:
+        logger.debug("Fetch channel with id: %s", id)
         response = self._make_request(
             "channels",
             params={
@@ -123,6 +124,7 @@ class YoutubeApiClient:
         return self._channel_from_response_item(items[0])
 
     def get_channel_by_handle(self, handle: str) -> Channel:
+        logger.debug("Fetch channel for handle: %s", handle)
         response = self._make_request(
             "channels",
             params={
@@ -146,6 +148,7 @@ class YoutubeApiClient:
         page_token: str | None = None,
         max_results: int = 50,
     ) -> tuple[list[PlaylistItem], str | None]:
+        logger.debug("Fetch playlist items for playlist_id: %s", playlist_id)
         params = {
             "part": "snippet",
             "playlistId": playlist_id,
@@ -190,27 +193,47 @@ class YoutubeApiClient:
         return all_items
 
     def get_video(self, video_id: str) -> Video:
+        videos = self._get_videos([video_id])
+        return videos[0]
+
+    def get_videos(self, video_ids: list[str]) -> list[Video]:
+        page_size = 50
+        video_ids_chunks = [
+            video_ids[i : i + page_size] for i in range(0, len(video_ids), page_size)
+        ]
+        videos: list[Video] = list()
+        for ids_chunk in video_ids_chunks:
+            videos_chunk = self._get_videos(video_ids=ids_chunk)
+            videos.extend(videos_chunk)
+        return videos
+
+    def _get_videos(self, video_ids: list[str]) -> list[Video]:
+        logger.info("Fetching videos with id: %s", video_ids)
+        assert len(video_ids) <= 50
         params = {
             "part": "snippet,statistics,contentDetails,paidProductPlacementDetails,topicDetails",
-            "id": video_id,
+            "id": ",".join(video_ids),
+            "maxResults": len(video_ids),
         }
 
         response = self._make_request("videos", params)
 
         items = response.get("items", [])
-        if not items:
-            raise VideoNotFoundError(f"Video not found: {video_id}")
+        if len(items) != len(video_ids):
+            raise VideoNotFoundError(
+                f"Unexpected results count for video ids: {video_ids}"
+            )
 
-        item = items[0]
-        snippet = item.get("snippet", {})
-        statistics = item.get("statistics", {})
-        content_details = item.get("contentDetails", {})
-        paid_placement = item.get("paidProductPlacementDetails", {})
-        topic_details = item.get("topicDetails", {})
+        return [self._item_to_video(item) for item in items]
 
+    def _item_to_video(self, video_respons_item: Any) -> Video:
+        snippet = video_respons_item.get("snippet", {})
+        statistics = video_respons_item.get("statistics", {})
+        content_details = video_respons_item.get("contentDetails", {})
+        paid_placement = video_respons_item.get("paidProductPlacementDetails", {})
+        topic_details = video_respons_item.get("topicDetails", {})
         duration = content_details.get("duration", "PT0S")
-
-        post_id = item["id"]
+        post_id = video_respons_item["id"]
         return Video(
             id=post_id,
             title=snippet.get("title", ""),

@@ -8,13 +8,12 @@ from extraction_task.extraction_task_result import (
     AccountExtractionResult,
     PostDetailsExtractionResult,
     PostListExtractionResult,
-    PostListResultItem,
 )
 
 import datetime
 import logging
 
-from .youtube_api_client import Channel, YoutubeApiClient, post_url
+from .youtube_api_client import Channel, Video, YoutubeApiClient, post_url
 from .youtube_api_config import YoutubeApiConfig
 
 logger = logging.getLogger(__name__)
@@ -71,30 +70,26 @@ class YoutubeExtractor(DataExtractor):
             channel = self._channel_by_handle_or_id(task_config.account_id)
             playlist_id = self.api_client.get_channel_uploads_playlist_id(channel.id)
             all_items = self.api_client.list_all_playlist_items(playlist_id)
-            logger.debug(f"Fetched {len(all_items)} items from playlist")
+            logger.info(f"Fetched {len(all_items)} items from playlist")
 
-            filtered_items = [
-                item
+            video_ids = [
+                item.video_id
                 for item in all_items
                 if task_config.published_after
                 <= item.published_at
                 <= task_config.published_before
             ]
-            logger.debug(f"Filtered to {len(filtered_items)} items in date range")
+            logger.info(f"Fetching {len(video_ids)} videos in date range...")
 
-            posts = [
-                PostListResultItem(
-                    post_id=item.video_id,
-                    published_at=item.published_at,
-                )
-                for item in filtered_items
+            post_details_list = [
+                self._video_to_post_details(video)
+                for video in self.api_client.get_videos(video_ids)
             ]
-
-            logger.info(f"Returning {len(posts)} posts for {task_config.account_id}")
+            logger.info(f"Fetched {len(video_ids)} videos.")
             return PostListExtractionResult(
-                data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
-                posts=posts,
+                posts=post_details_list,
             )
+
         except Exception as e:
             logger.error(
                 f"Failed to extract post list for {task_config.account_id}: {e}"
@@ -109,25 +104,29 @@ class YoutubeExtractor(DataExtractor):
             video = self.api_client.get_video(task_config.post_id)
             logger.debug(f"Fetched video: {video.title}")
 
-            return PostDetailsExtractionResult(
-                data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
-                post_url=post_url(video.id, video.post_type),
-                title=video.title,
-                description=video.description,
-                comment_count=int(video.comment_count) if video.comment_count else 0,
-                view_count=video.view_count,
-                like_count=int(video.like_count) if video.like_count else 0,
-                repost_count=0,  # youtube does not have a repost concept
-                share_count=0,  # youtube does not have a share concept
-                tags=video.tags,
-                categories=video.topic_categories,
-                sn_has_paid_placement=video.has_paid_placement,
-                sn_brand="",  # youtube does not provide brand info for product placement
-                post_type="video",
-                text_content="",  # not relevant for video posts
-            )
+            return self._video_to_post_details(video)
         except Exception as e:
             logger.error(
                 f"Failed to extract post detail for {task_config.post_id}: {e}"
             )
             raise Exception(f"Failed to extract post detail: {e}")
+
+    def _video_to_post_details(self, video: Video) -> PostDetailsExtractionResult:
+        return PostDetailsExtractionResult(
+            post_id=video.id,
+            data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+            post_url=post_url(video.id, video.post_type),
+            title=video.title,
+            description=video.description,
+            comment_count=int(video.comment_count) if video.comment_count else 0,
+            view_count=video.view_count,
+            like_count=int(video.like_count) if video.like_count else 0,
+            repost_count=0,  # youtube does not have a repost concept
+            share_count=0,  # youtube does not have a share concept
+            tags=video.tags,
+            categories=video.topic_categories,
+            sn_has_paid_placement=video.has_paid_placement,
+            sn_brand="",  # youtube does not provide brand info for product placement
+            post_type="video",
+            text_content="",  # not relevant for video posts
+        )

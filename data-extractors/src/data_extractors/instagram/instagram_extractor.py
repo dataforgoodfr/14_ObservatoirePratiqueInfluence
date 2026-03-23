@@ -8,7 +8,6 @@ from extraction_task.extraction_task_result import (
     AccountExtractionResult,
     PostDetailsExtractionResult,
     PostListExtractionResult,
-    PostListResultItem,
 )
 import time
 import random
@@ -18,18 +17,12 @@ import logging
 
 import instaloader
 from instaloader import Post
-import diskcache  # Replaced custom cache
 
 logger = logging.getLogger(__name__)
 
 
 class InstagramExtractor(DataExtractor):
-    def __init__(
-        self,
-        cache_folder: str,
-        cache_ttl_seconds: int,
-    ):
-
+    def __init__(self) -> None:
         self.L = instaloader.Instaloader(
             download_pictures=False,
             download_videos=False,
@@ -37,16 +30,13 @@ class InstagramExtractor(DataExtractor):
             compress_json=False,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         )
-        # Initialize a persistent, SQLite-backed cache
-        # You can adjust the size_limit (in bytes) if needed
-        self.cache = diskcache.Cache(cache_folder)
-        self.cache_ttl_seconds = cache_ttl_seconds
 
     def _create_post_details_from_post(
         self, post: instaloader.Post
     ) -> PostDetailsExtractionResult:
         """Helper to convert an Instaloader Post into a PostDetailsExtractionResult."""
         return PostDetailsExtractionResult(
+            post_id=post.shortcode,
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=f"instagram.com/p/{post.shortcode}/",
             title=post.title if post.title else "No title",
@@ -111,7 +101,7 @@ class InstagramExtractor(DataExtractor):
                 self.L.context, task_config.account_id
             ).get_posts()
 
-            posts_ret: list[PostListResultItem] = []
+            posts_ret: list[PostDetailsExtractionResult] = []
             for i, post in enumerate(posts):
                 d3 = post.date.replace(tzinfo=timezone.utc)
                 # On instagram, users can pin up to 3 posts on their profiles.
@@ -123,18 +113,8 @@ class InstagramExtractor(DataExtractor):
                 if (d3 < task_config.published_before) and (
                     d3 > task_config.published_after
                 ):
-                    posts_ret.append(
-                        PostListResultItem(post_id=post.shortcode, published_at=d3)
-                    )
-
                     post_details = self._create_post_details_from_post(post)
-
-                    # Save to cache with the shortcode as the key.
-
-                    cache_key = f"post_{post.shortcode}"
-                    self.cache.set(
-                        cache_key, post_details, expire=self.cache_ttl_seconds
-                    )
+                    posts_ret.append(post_details)
 
                 time.sleep(random.uniform(2, 6))
 
@@ -142,7 +122,6 @@ class InstagramExtractor(DataExtractor):
                 f"Returning {len(posts_ret)} posts for {task_config.account_id}"
             )
             return PostListExtractionResult(
-                data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
                 posts=posts_ret,
             )
         except Exception as e:
@@ -157,23 +136,11 @@ class InstagramExtractor(DataExtractor):
         self, task_config: ExtractPostDetailsTaskConfig
     ) -> PostDetailsExtractionResult:
 
-        # Check cache first using the globally unique shortcode
-        cache_key = f"post_{task_config.post_id}"
-        cached_post = self.cache.get(cache_key)
-
-        if cached_post:
-            logger.info(f"CACHED_POST found for: {task_config.post_id}")
-            return cached_post
-
         try:
             logger.info(f"Extracting post detail for post id: {task_config.post_id}")
             post = Post.from_shortcode(self.L.context, task_config.post_id)
             logger.debug(f"Fetched post: {post.title}")
-
             post_details = self._create_post_details_from_post(post)
-
-            # Cache the newly fetched data
-            self.cache.set(cache_key, post_details, expire=604800)
             return post_details
 
         except Exception as e:

@@ -152,11 +152,9 @@ def create_task_service(config: ExtractSettings) -> ExtractionTaskService:
 
 def create_extractor(config: ExtractSettings) -> DataExtractor:
     extractors = {
-        SocialNetwork.INSTAGRAM: lambda: create_instagram_extractor(
-            config.cache_folder, config.cache_ttl_seconds
-        ),
+        SocialNetwork.INSTAGRAM: InstagramExtractor,
         SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(
-            config.cache_folder, config.cache_ttl_seconds, config.tiktok
+            config.cache_folder, config.tiktok
         ),
         SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(
             config.cache_folder, config.cache_ttl_seconds, config.youtube
@@ -166,28 +164,18 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
 
 
 def create_tiktok_extractor(
-    cache_folder: str, cache_ttl_seconds: int, settings: TiktokSettings
+    cache_folder: str, settings: TiktokSettings
 ) -> DataExtractor:
     if os.getenv("TIKTOK_EXTRACTOR") == "V1":
         return TiktokExtractor()
     else:
         # Default to V2
         return TiktokExtractorV2(
-            cache_folder=path.join(cache_folder, "tiktok"),
-            cache_ttl_seconds=cache_ttl_seconds,
+            raw_data_folder=path.join(cache_folder, "tiktok-raw-data"),
             api_config=TikTokApiConfig(
                 headless=settings.headless, ms_token=settings.ms_token
             ),
         )
-
-
-def create_instagram_extractor(
-    cache_folder: str, cache_ttl_seconds: int
-) -> DataExtractor:
-    return InstagramExtractor(
-        cache_folder=path.join(cache_folder, "instagram"),
-        cache_ttl_seconds=cache_ttl_seconds,
-    )
 
 
 def create_youtube_extractor(

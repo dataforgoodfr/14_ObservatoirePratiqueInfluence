@@ -6,7 +6,6 @@ from os import path
 from pathlib import Path
 
 from TikTokApi import TikTokApi
-import diskcache
 
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.tiktok.tiktokapi import (
@@ -23,7 +22,6 @@ from extraction_task.extraction_task_result import (
     AccountExtractionResult,
     PostDetailsExtractionResult,
     PostListExtractionResult,
-    PostListResultItem,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,19 +30,14 @@ logger = logging.getLogger(__name__)
 class TiktokExtractorV2(DataExtractor):
     def __init__(
         self,
-        cache_folder: str,
-        cache_ttl_seconds: int,
         api_config: TikTokApiConfig,
+        raw_data_folder: str = "raw_data",
         write_raw_data_to_disk: bool = False,
     ) -> None:
-        self.cache = diskcache.Cache(
-            directory=cache_folder,
-        )
-        self.cache_ttl_seconds = cache_ttl_seconds
         # Whether to store raw API data for further analysis/reuse
         self.write_raw_data = write_raw_data_to_disk
         if write_raw_data_to_disk:
-            self.raw_data_folder = Path(path.join(cache_folder, "raw_data"))
+            self.raw_data_folder = Path(raw_data_folder)
             self.raw_data_folder.mkdir(parents=True, exist_ok=True)
         self.api_config = api_config
 
@@ -101,7 +94,7 @@ class TiktokExtractorV2(DataExtractor):
             f"published_before: {task_config.published_before}"
         )
 
-        posts: list[PostListResultItem] = []
+        posts: list[PostDetailsExtractionResult] = []
 
         try:
             async with TikTokApi() as api:
@@ -115,27 +108,11 @@ class TiktokExtractorV2(DataExtractor):
                     task_config.published_before.replace(tzinfo=None),
                 )
 
-                # Store post_result details in cache to avoid refetching
-                # when extract_post_details is called during cache duration
-                for video in videos:
-                    self._write_video_dict_to_disk(video.id, video.as_dict)
-                    post_details_result = self._build_post_details_result_from_video(
-                        video.as_dict
-                    )
-                    self.cache.set(
-                        self._video_cache_key(video.id),
-                        post_details_result,
-                        expire=self.cache_ttl_seconds,
-                    )
-
                 posts = [
-                    PostListResultItem(
-                        post_id=v.id,
-                        published_at=v.create_time.replace(
-                            tzinfo=datetime.timezone.utc
-                        ),
+                    self._build_post_details_result_from_video(
+                        video.as_dict,
                     )
-                    for v in videos
+                    for video in videos
                 ]
 
                 logger.info(
@@ -143,7 +120,6 @@ class TiktokExtractorV2(DataExtractor):
                 )
 
                 return PostListExtractionResult(
-                    data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
                     posts=posts,
                 )
 
@@ -167,11 +143,6 @@ class TiktokExtractorV2(DataExtractor):
     ) -> PostDetailsExtractionResult:
         try:
             video_id = task_config.post_id
-            cache_key = self._video_cache_key(task_config.post_id)
-            cached_value = self.cache.get(cache_key)
-            if cached_value:
-                logger.info(f"CACHED_POST found for: {video_id}")
-                return cached_value
 
             async with TikTokApi() as api:
                 await create_sessions(api, self.api_config)
@@ -183,12 +154,6 @@ class TiktokExtractorV2(DataExtractor):
                 post_details_result = self._build_post_details_result_from_video(
                     video_data
                 )
-                self.cache.set(
-                    cache_key,
-                    post_details_result,
-                    expire=self.cache_ttl_seconds,
-                )
-
                 return post_details_result
         except Exception as e:
             message = (
@@ -227,6 +192,7 @@ class TiktokExtractorV2(DataExtractor):
         )
         videos_statsV2 = video_data.get("statsV2", {})
         return PostDetailsExtractionResult(
+            post_id=video_id,
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=video_url,
             title=video_data.get("desc", ""),
