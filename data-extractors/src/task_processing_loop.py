@@ -40,6 +40,9 @@ class TaskProcessingLoop:
         self._extractor = extractor
         self._exit_after_tasks_failure = exit_after_tasks_failure
 
+    # Error handling expected behavior:
+    #  - If mark completed fails or aqcuire failed or mark failed fail => exit
+    #  - if execute fails => exit based on _exit_after_tasks_failure
     def run(self) -> None:
         public_ip = get_my_public_ip()
         logger.info("Public IP: " + public_ip)
@@ -55,22 +58,24 @@ class TaskProcessingLoop:
                 time.sleep(self._polling_interval)
             else:
                 logger.info(
-                    "Successfully acquired task with id %s - Executing it",
+                    "Task %s - Acquired -> Executing it..",
                     task.id,
                 )
                 try:
                     result = self.execute_task(task)
                     logger.info(
-                        "Task with id %s completed - Marking as completed",
+                        "Task %s - Completed -> Marking as completed",
                         task.id,
                     )
                     self._task_service.mark_task_completed(task, result)
-                except KeyboardInterrupt as kb:
-                    raise kb
-                except Exception as e:
+                    logger.info(
+                        "Task %s - Marked completed",
+                        task.id,
+                    )
+                except TaskExecutionFailedError as e:
                     error_message = str(e)
                     logger.exception(
-                        "Exception raised task with id %s completed - Marking as failed with error: %s",
+                        "Task %s - Execution failed -> Marking as failed with error: %s",
                         task.id,
                         error_message,
                     )
@@ -83,18 +88,26 @@ class TaskProcessingLoop:
                         isinstance(self._exit_after_tasks_failure, int)
                         and self._exit_after_tasks_failure <= failure_count
                     ):
+                        logger.info("Reached max failure -> Existing")
                         raise e
 
     def execute_task(self, task: ExtractionTask) -> ExtractionTaskResult:
-        if task.type == ExtractionTaskType.EXTRACT_ACCOUNT:
-            assert isinstance(task.task_config, ExtractAccountTaskConfig)
-            return self._extractor.extract_account(task.task_config)
-        elif task.type == ExtractionTaskType.EXTRACT_POST_LIST:
-            assert isinstance(task.task_config, ExtractPostListTaskConfig)
-            return self._extractor.extract_post_list(task.task_config)
-        elif task.type == ExtractionTaskType.EXTRACT_POST_DETAILS:
-            assert isinstance(task.task_config, ExtractPostDetailsTaskConfig)
-            return self._extractor.extract_post_details(task.task_config)
+        try:
+            if task.type == ExtractionTaskType.EXTRACT_ACCOUNT:
+                assert isinstance(task.task_config, ExtractAccountTaskConfig)
+                return self._extractor.extract_account(task.task_config)
+            elif task.type == ExtractionTaskType.EXTRACT_POST_LIST:
+                assert isinstance(task.task_config, ExtractPostListTaskConfig)
+                return self._extractor.extract_post_list(task.task_config)
+            elif task.type == ExtractionTaskType.EXTRACT_POST_DETAILS:
+                assert isinstance(task.task_config, ExtractPostDetailsTaskConfig)
+                return self._extractor.extract_post_details(task.task_config)
+        except Exception as e:
+            raise TaskExecutionFailedError from e
+
+
+class TaskExecutionFailedError(Exception):
+    pass
 
 
 def get_my_public_ip() -> str:
