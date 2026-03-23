@@ -4,16 +4,23 @@ import uuid
 from http import HTTPStatus
 
 import fastapi
-import pydantic
 
 from app._auth import validate_api_key
 from app.db import pool
 from app.models import (
+    DetailedStats,
     ExtractionTask,
     ExtractionTaskResponse,
+    ExtractionTaskStatsResponse,
     ExtractionTaskStatus,
     ExtractionTaskType,
+    MarkTaskFailedPayload,
+    NetworkCount,
+    RecycleExpiredTasksResponse,
+    RecycleFailedTasksResponse,
     SocialNetwork,
+    StatusCount,
+    TaskTypeCount,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -89,15 +96,9 @@ async def mark_completed(
             raise
 
 
-class MarkFailedPayload(pydantic.BaseModel):
-    """Payload for MarkFailed endpoint."""
-
-    error: str | None
-
-
 async def mark_failed(
     task_uid: uuid.UUID,
-    payload: MarkFailedPayload,
+    payload: MarkTaskFailedPayload,
     api_key: str = API_KEY,
 ) -> fastapi.Response:
     update_task = """
@@ -113,19 +114,13 @@ async def mark_failed(
 
     async with pool.PGPool.get_connection() as conn:
         try:
-            await conn.execute(update_task, task_uid, payload.error)
+            await conn.execute(update_task, task_uid, ExtractionTaskStatus.FAILED, payload.error)
             return fastapi.Response(status_code=HTTPStatus.NO_CONTENT)
 
         except Exception:
             message = f"Error updating task {task_uid}"
             LOGGER.exception(message)
             raise
-
-
-class RecycleFailedTasksResponse(pydantic.BaseModel):
-    """Response model for recycle failed tasks endpoint."""
-
-    recycled_count: int
 
 
 async def recycle_failed_tasks(
@@ -154,12 +149,6 @@ async def recycle_failed_tasks(
         except Exception:
             LOGGER.exception("Error recycling failed tasks")
             raise
-
-
-class RecycleExpiredTasksResponse(pydantic.BaseModel):
-    """Response model for recycle expired tasks endpoint."""
-
-    recycled_count: int
 
 
 async def recycle_expired_tasks(
@@ -251,43 +240,6 @@ async def register_tasks(
         except Exception:
             LOGGER.exception("Error inserting tasks")
             raise
-
-
-class StatusCount(pydantic.BaseModel):
-    """Count for a specific status."""
-
-    status: str
-    count: int
-
-
-class TaskTypeCount(pydantic.BaseModel):
-    """Count for a specific task type."""
-
-    type: str
-    count: int
-
-
-class NetworkCount(pydantic.BaseModel):
-    """Count for a specific social network."""
-
-    social_network: str
-    count: int
-
-
-class DetailedStats(pydantic.BaseModel):
-    """Detailed stats for a combination of task type, network, and status."""
-
-    type: str
-    social_network: str
-    status: str
-    count: int
-
-
-class ExtractionTaskStatsResponse(pydantic.BaseModel):
-    """Response model for extraction task stats endpoint."""
-
-    global_stats: dict
-    detailed_stats: list[DetailedStats]
 
 
 async def get_extraction_task_stats(
