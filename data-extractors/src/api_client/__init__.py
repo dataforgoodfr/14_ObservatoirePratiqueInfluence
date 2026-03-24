@@ -30,17 +30,22 @@ __all__ = [
     "ApiAttributeError",
     "ApiException",
     "Account",
+    "DetailedStats",
     "ExtractAccountTaskConfig",
     "ExtractPostDetailsTaskConfig",
     "ExtractPostListTaskConfig",
     "ExtractionTask",
     "ExtractionTaskResponse",
+    "ExtractionTaskStatsResponse",
     "ExtractionTaskStatus",
     "ExtractionTaskType",
     "HTTPValidationError",
     "Influencer",
     "LocationInner",
+    "MarkFailedPayload",
     "Post",
+    "RecycleExpiredTasksResponse",
+    "RecycleFailedTasksResponse",
     "SocialNetwork",
     "TaskConfig",
     "TaskConfig1",
@@ -64,17 +69,22 @@ from api_client.exceptions import ApiException as ApiException
 
 # import models into sdk package
 from api_client.models.account import Account as Account
+from api_client.models.detailed_stats import DetailedStats as DetailedStats
 from api_client.models.extract_account_task_config import ExtractAccountTaskConfig as ExtractAccountTaskConfig
 from api_client.models.extract_post_details_task_config import ExtractPostDetailsTaskConfig as ExtractPostDetailsTaskConfig
 from api_client.models.extract_post_list_task_config import ExtractPostListTaskConfig as ExtractPostListTaskConfig
 from api_client.models.extraction_task import ExtractionTask as ExtractionTask
 from api_client.models.extraction_task_response import ExtractionTaskResponse as ExtractionTaskResponse
+from api_client.models.extraction_task_stats_response import ExtractionTaskStatsResponse as ExtractionTaskStatsResponse
 from api_client.models.extraction_task_status import ExtractionTaskStatus as ExtractionTaskStatus
 from api_client.models.extraction_task_type import ExtractionTaskType as ExtractionTaskType
 from api_client.models.http_validation_error import HTTPValidationError as HTTPValidationError
 from api_client.models.influencer import Influencer as Influencer
 from api_client.models.location_inner import LocationInner as LocationInner
+from api_client.models.mark_failed_payload import MarkFailedPayload as MarkFailedPayload
 from api_client.models.post import Post as Post
+from api_client.models.recycle_expired_tasks_response import RecycleExpiredTasksResponse as RecycleExpiredTasksResponse
+from api_client.models.recycle_failed_tasks_response import RecycleFailedTasksResponse as RecycleFailedTasksResponse
 from api_client.models.social_network import SocialNetwork as SocialNetwork
 from api_client.models.task_config import TaskConfig as TaskConfig
 from api_client.models.task_config1 import TaskConfig1 as TaskConfig1

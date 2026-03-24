@@ -66,3 +66,58 @@ class ExtractionTaskResponse(pydantic.BaseModel):
     type: ExtractionTaskType | None = None
     task_config: ExtractionTaskConfig | None = None
     error: str | None = None
+
+
+class MarkTaskFailedPayload(pydantic.BaseModel):
+    """Payload for MarkFailed endpoint."""
+
+    error: str | None
+
+
+class RecycleFailedTasksResponse(pydantic.BaseModel):
+    """Response model for recycle failed tasks endpoint."""
+
+    recycled_count: int
+
+
+class RecycleExpiredTasksResponse(pydantic.BaseModel):
+    """Response model for recycle expired tasks endpoint."""
+
+    recycled_count: int
+
+
+class StatusCount(pydantic.BaseModel):
+    """Count for a specific status."""
+
+    status: str
+    count: int
+
+
+class TaskTypeCount(pydantic.BaseModel):
+    """Count for a specific task type."""
+
+    type: str
+    count: int
+
+
+class NetworkCount(pydantic.BaseModel):
+    """Count for a specific social network."""
+
+    social_network: str
+    count: int
+
+
+class DetailedStats(pydantic.BaseModel):
+    """Detailed stats for a combination of task type, network, and status."""
+
+    type: str
+    social_network: str
+    status: str
+    count: int
+
+
+class ExtractionTaskStatsResponse(pydantic.BaseModel):
+    """Response model for extraction task stats endpoint."""
+
+    global_stats: dict
+    detailed_stats: list[DetailedStats]

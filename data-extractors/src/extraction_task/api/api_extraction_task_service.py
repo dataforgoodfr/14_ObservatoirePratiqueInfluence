@@ -30,6 +30,7 @@ from api_client.models import (
     ExtractionTask as ApiExtractionTask,
     ExtractPostDetailsTaskConfig,
     TaskConfig,
+    MarkFailedPayload,
 )
 
 from extraction_task.social_network import SocialNetwork as DomainSocialNetwork
@@ -64,9 +65,8 @@ class ApiExtractionTaskService(ExtractionTaskService):
 
     def mark_task_failed(self, task: ExtractionTask, task_error: str) -> None:
         """Mark a task as failed."""
-        self._api.update_task_extraction_task_task_uid_patch(
-            task.id,
-            ApiExtractionTaskStatus.FAILED,
+        self._api.mark_failed_extraction_task_task_uid_mark_failed_post(
+            task.id, mark_failed_payload=MarkFailedPayload(error=task_error)
         )
 
     def mark_task_completed(
@@ -91,9 +91,8 @@ class ApiExtractionTaskService(ExtractionTaskService):
             raise ValueError(f"Unknown task result type: {type(task_result)}")
 
         # Mark task as completed
-        self._api.update_task_extraction_task_task_uid_patch(
+        self._api.mark_completed_extraction_task_task_uid_mark_completed_post(
             task.id,
-            ApiExtractionTaskStatus.COMPLETED,
         )
 
     def _upsert_account(

@@ -74,9 +74,13 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *PingApi* | [**ping_ping_get**](api_client/docs/PingApi.md#ping_ping_get) | **GET** /ping | Ping
 *DefaultApi* | [**acquire_available_task_extraction_task_acquire_post**](api_client/docs/DefaultApi.md#acquire_available_task_extraction_task_acquire_post) | **POST** /extraction-task/acquire | Acquire Available Task
+*DefaultApi* | [**get_extraction_task_stats_extraction_task_stats_get**](api_client/docs/DefaultApi.md#get_extraction_task_stats_extraction_task_stats_get) | **GET** /extraction-task/stats | Get Extraction Task Stats
 *DefaultApi* | [**get_influencer_accounts_influencer_username_get**](api_client/docs/DefaultApi.md#get_influencer_accounts_influencer_username_get) | **GET** /influencer/{username} | Get Influencer Accounts
+*DefaultApi* | [**mark_completed_extraction_task_task_uid_mark_completed_post**](api_client/docs/DefaultApi.md#mark_completed_extraction_task_task_uid_mark_completed_post) | **POST** /extraction-task/{task_uid}/mark-completed | Mark Completed
+*DefaultApi* | [**mark_failed_extraction_task_task_uid_mark_failed_post**](api_client/docs/DefaultApi.md#mark_failed_extraction_task_task_uid_mark_failed_post) | **POST** /extraction-task/{task_uid}/mark-failed/ | Mark Failed
+*DefaultApi* | [**recycle_expired_tasks_extraction_task_recycle_expired_post**](api_client/docs/DefaultApi.md#recycle_expired_tasks_extraction_task_recycle_expired_post) | **POST** /extraction-task/recycle-expired | Recycle Expired Tasks
+*DefaultApi* | [**recycle_failed_tasks_extraction_task_recycle_failed_post**](api_client/docs/DefaultApi.md#recycle_failed_tasks_extraction_task_recycle_failed_post) | **POST** /extraction-task/recycle-failed | Recycle Failed Tasks
 *DefaultApi* | [**register_tasks_extraction_task_post**](api_client/docs/DefaultApi.md#register_tasks_extraction_task_post) | **POST** /extraction-task/ | Register Tasks
-*DefaultApi* | [**update_task_extraction_task_task_uid_patch**](api_client/docs/DefaultApi.md#update_task_extraction_task_task_uid_patch) | **PATCH** /extraction-task/{task_uid} | Update Task
 *DefaultApi* | [**upsert_accounts_accounts_post**](api_client/docs/DefaultApi.md#upsert_accounts_accounts_post) | **POST** /accounts/ | Upsert Accounts
 *DefaultApi* | [**upsert_posts_posts_post**](api_client/docs/DefaultApi.md#upsert_posts_posts_post) | **POST** /posts/ | Upsert Posts
 
@@ -84,17 +88,22 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [Account](api_client/docs/Account.md)
+ - [DetailedStats](api_client/docs/DetailedStats.md)
  - [ExtractAccountTaskConfig](api_client/docs/ExtractAccountTaskConfig.md)
  - [ExtractPostDetailsTaskConfig](api_client/docs/ExtractPostDetailsTaskConfig.md)
  - [ExtractPostListTaskConfig](api_client/docs/ExtractPostListTaskConfig.md)
  - [ExtractionTask](api_client/docs/ExtractionTask.md)
  - [ExtractionTaskResponse](api_client/docs/ExtractionTaskResponse.md)
+ - [ExtractionTaskStatsResponse](api_client/docs/ExtractionTaskStatsResponse.md)
  - [ExtractionTaskStatus](api_client/docs/ExtractionTaskStatus.md)
  - [ExtractionTaskType](api_client/docs/ExtractionTaskType.md)
  - [HTTPValidationError](api_client/docs/HTTPValidationError.md)
  - [Influencer](api_client/docs/Influencer.md)
  - [LocationInner](api_client/docs/LocationInner.md)
+ - [MarkFailedPayload](api_client/docs/MarkFailedPayload.md)
  - [Post](api_client/docs/Post.md)
+ - [RecycleExpiredTasksResponse](api_client/docs/RecycleExpiredTasksResponse.md)
+ - [RecycleFailedTasksResponse](api_client/docs/RecycleFailedTasksResponse.md)
  - [SocialNetwork](api_client/docs/SocialNetwork.md)
  - [TaskConfig](api_client/docs/TaskConfig.md)
  - [TaskConfig1](api_client/docs/TaskConfig1.md)
