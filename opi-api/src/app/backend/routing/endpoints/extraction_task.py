@@ -114,7 +114,7 @@ async def mark_failed(
 
     async with pool.PGPool.get_connection() as conn:
         try:
-            await conn.execute(update_task, task_uid, ExtractionTaskStatus.FAILED, payload.error)
+            await conn.execute(update_task, task_uid, payload.error)
             return fastapi.Response(status_code=HTTPStatus.NO_CONTENT)
 
         except Exception:
