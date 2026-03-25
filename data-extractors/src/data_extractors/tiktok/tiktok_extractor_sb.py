@@ -18,7 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from data_extractors.data_extractor import DataExtractor
 
-from data_extractors.tiktok.tiktok_class import Video
+from data_extractors.tiktok.tiktok_sb import Video
 
 from extraction_task.extraction_task_config import (
     ExtractAccountTaskConfig,
