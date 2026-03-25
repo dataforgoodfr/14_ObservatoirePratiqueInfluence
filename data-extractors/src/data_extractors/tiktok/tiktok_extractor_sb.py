@@ -34,25 +34,6 @@ from extraction_task.extraction_task_result import (
 
 logger = logging.getLogger(__name__)
 
-def remove_emojis(text):
-    emoji_pattern = re.compile(
-        "["
-        "\U0001F600-\U0001F64F"  # emoticons
-        "\U0001F300-\U0001F5FF"  # symbols & pictographs
-        "\U0001F680-\U0001F6FF"  # transport & map
-        "\U0001F700-\U0001F77F"  # alchemical symbols
-        "\U0001F780-\U0001F7FF"
-        "\U0001F800-\U0001F8FF"
-        "\U0001F900-\U0001F9FF"  # supplemental symbols
-        "\U0001FA00-\U0001FA6F"
-        "\U0001FA70-\U0001FAFF"
-        "\U00002700-\U000027BF"  # dingbats
-        "\U000024C2-\U0001F251"
-        "]+",
-        flags=re.UNICODE,
-    )
-    return emoji_pattern.sub(r'', text)
-
 class TiktokExtractorSB(DataExtractor):
     def __init__(
         self,
@@ -96,7 +77,7 @@ class TiktokExtractorSB(DataExtractor):
                 return AccountExtractionResult(
                     data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
                     handle=user_info_user["uniqueId"],
-                    description=remove_emojis(user_info_user['signature']),
+                    description=user_info_user['signature'].encode("cp1252", errors="ignore").decode("cp1252"),
                     follower_count=int(user_info_statsV2["followerCount"]),
                     following_count=int(user_info_statsV2["followingCount"]),
                     post_count=int(user_info_statsV2["videoCount"]),
@@ -142,7 +123,7 @@ class TiktokExtractorSB(DataExtractor):
                         break
                     except IndexError:
                         logger.info("Scrapper detected, cooldown")
-                        time.sleep(8*random.randint(50, 65))
+                        time.sleep(10*random.randint(50, 65))
 
                         sb.driver.uc_open_with_reconnect(tiktok_url, reconnect_time=4)
                         logger.info("Reopen webpage and wait to load posts")
@@ -269,14 +250,14 @@ class TiktokExtractorSB(DataExtractor):
         author_unique_id = video_data['author']["uniqueId"]
         video_url = f"https://www.tiktok.com/@{author_unique_id}/video/{video_id}"
         content_descs = "\n".join(
-            [remove_emojis(c.get("desc", "")) for c in video_data.get("contents", [])]
+            [(c.get("desc", "")).encode("cp1252", errors="ignore").decode("cp1252") for c in video_data.get("contents", [])]
         )
 
         videos_statsV2 = video_data.get("statsV2", {})
         return PostDetailsExtractionResult(
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=video_url,
-            title=remove_emojis(video_data.get("desc", "")),
+            title=(video_data.get("desc", "")).encode("cp1252", errors="ignore").decode("cp1252"),
             description=content_descs,
             comment_count=int(videos_statsV2.get("commentCount", 0)),
             view_count=int(videos_statsV2.get("playCount", 0)),
