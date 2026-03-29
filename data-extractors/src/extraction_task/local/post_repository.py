@@ -4,19 +4,6 @@ from extraction_task import social_network
 from extraction_task.local import csv_repository
 
 
-class PostListItem(BaseModel):
-    social_network: social_network.SocialNetwork
-    post_id: str
-    account_id: str
-
-    @classmethod
-    def from_csv_row(cls, csv_row: dict) -> Self:
-        return cast(Self, PostListItem.model_validate(csv_row))
-
-    def to_csv_row(self) -> dict:
-        return self.model_dump()
-
-
 class PostDetails(BaseModel):
     social_network: social_network.SocialNetwork
     post_id: str
@@ -58,36 +45,16 @@ class PostRepository:
     _csv_repository: csv_repository.CsvRowRepository
 
     def __init__(self, csv_file: str):
-        field_names = list(
-            dict.fromkeys(
-                list(PostListItem.model_fields.keys())
-                + list(PostDetails.model_fields.keys())
-            )
-        )
+        field_names = list(dict.fromkeys(PostDetails.model_fields.keys()))
 
         self._csv_repository = csv_repository.CsvRowRepository(
             csv_file,
             field_names,
         )
 
-    def _item_from_csv_row(self, csv_row: dict) -> PostListItem:
-        return PostListItem.model_validate(csv_row)
-
-    def _item_to_csv_row(self, item: PostListItem) -> dict:
-        return item.model_dump()
-
-    def upsert_post_list_item(self, post: PostListItem) -> None:
-        def match_predicate(row: dict) -> bool:
-            row_post = PostListItem.from_csv_row(row)
-            return (
-                row_post.post_id == post.post_id
-                and row_post.social_network == post.social_network
-            )
-
-        self._csv_repository._upsert_row(
-            match_predicate,
-            post.model_dump(),
-        )
+    def upsert_post_list(self, posts: list[PostDetails]) -> None:
+        for post in posts:
+            self.upsert_post_details(post)
 
     def upsert_post_details(self, post: PostDetails) -> None:
         def match_predicate(row: dict) -> bool:

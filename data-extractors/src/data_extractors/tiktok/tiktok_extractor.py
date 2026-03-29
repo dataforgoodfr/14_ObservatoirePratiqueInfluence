@@ -96,6 +96,7 @@ class TiktokExtractor(DataExtractor):
 
         return PostDetailsExtractionResult(
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+            post_id=task_config.post_id,
             post_url=post_url,
             title="",  # Only description for tiktok
             description=post_data["desc"],

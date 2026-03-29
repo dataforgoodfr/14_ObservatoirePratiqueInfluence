@@ -15,18 +15,9 @@ class AccountExtractionResult(BaseModel):
     categories: list[str]
 
 
-class PostListResultItem(BaseModel):
-    post_id: str
-    published_at: AwareDatetime
-
-
-class PostListExtractionResult(BaseModel):
-    data_extraction_date: AwareDatetime
-    posts: list[PostListResultItem]
-
-
 class PostDetailsExtractionResult(BaseModel):
     data_extraction_date: AwareDatetime
+    post_id: str
     post_url: str
     title: str
     description: str
@@ -41,6 +32,10 @@ class PostDetailsExtractionResult(BaseModel):
     sn_brand: str
     post_type: str
     text_content: str
+
+
+class PostListExtractionResult(BaseModel):
+    posts: list[PostDetailsExtractionResult]
 
 
 ExtractionTaskResult = Union[
