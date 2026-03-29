@@ -3,7 +3,6 @@ from datetime import timedelta
 import json
 import logging
 import random
-import re
 import time
 
 from os import path
@@ -11,10 +10,8 @@ from pathlib import Path
 
 import diskcache
 
-from seleniumbase import SB, Driver
+from seleniumbase import SB
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from data_extractors.data_extractor import DataExtractor
 
@@ -33,6 +30,7 @@ from extraction_task.extraction_task_result import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 class TiktokExtractorSB(DataExtractor):
     def __init__(
@@ -58,7 +56,7 @@ class TiktokExtractorSB(DataExtractor):
         try:
             with SB(uc=True, headless=True) as sb:
                 acct = task_config.account_id
-                tiktok_url = f'https://www.tiktok.com/@{acct}'
+                tiktok_url = f"https://www.tiktok.com/@{acct}"
 
                 sb.driver.uc_open_with_reconnect(tiktok_url, reconnect_time=4)
 
@@ -66,18 +64,22 @@ class TiktokExtractorSB(DataExtractor):
 
                 userstatsV2 = sb.driver.find_element(By.XPATH, userstatsV2_xpath)
 
-                user_cmplt_json = json.loads(userstatsV2.get_attribute('innerHTML'))
-                user_data = user_cmplt_json['__DEFAULT_SCOPE__']['webapp.user-detail']['userInfo']
+                user_cmplt_json = json.loads(userstatsV2.get_attribute("innerHTML"))
+                user_data = user_cmplt_json["__DEFAULT_SCOPE__"]["webapp.user-detail"][
+                    "userInfo"
+                ]
 
-                user_info_user = user_data['user']
-                user_info_statsV2 = user_data['statsV2']
-                
+                user_info_user = user_data["user"]
+                user_info_statsV2 = user_data["statsV2"]
+
                 self._write_user_dict_to_disk(task_config.account_id, user_data)
 
                 return AccountExtractionResult(
                     data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
                     handle=user_info_user["uniqueId"],
-                    description=user_info_user['signature'].encode("cp1252", errors="ignore").decode("cp1252"),
+                    description=user_info_user["signature"]
+                    .encode("cp1252", errors="ignore")
+                    .decode("cp1252"),
                     follower_count=int(user_info_statsV2["followerCount"]),
                     following_count=int(user_info_statsV2["followingCount"]),
                     post_count=int(user_info_statsV2["videoCount"]),
@@ -110,20 +112,20 @@ class TiktokExtractorSB(DataExtractor):
         try:
             with SB(uc=True, headless=False) as sb:
                 acct = task_config.account_id
-                tiktok_url = f'https://www.tiktok.com/@{acct}'
+                tiktok_url = f"https://www.tiktok.com/@{acct}"
 
                 sb.driver.uc_open_with_reconnect(tiktok_url, reconnect_time=4)
 
                 item_xpath = '//div[contains(@id, "grid-item-container")]'
 
                 while True:
-                    items = sb.driver.find_elements(By.XPATH, f'{item_xpath}')
+                    items = sb.driver.find_elements(By.XPATH, f"{item_xpath}")
                     try:
-                        last_item = items[-1]
+                        _ = items[-1]  # Verify items are loaded
                         break
                     except IndexError:
                         logger.info("Scrapper detected, cooldown")
-                        time.sleep(10*random.randint(50, 65))
+                        time.sleep(10 * random.randint(50, 65))
 
                         sb.driver.uc_open_with_reconnect(tiktok_url, reconnect_time=4)
                         logger.info("Reopen webpage and wait to load posts")
@@ -132,28 +134,40 @@ class TiktokExtractorSB(DataExtractor):
                 div_ancestors = '//div[@id="user-post-item-list"]'
                 post_xpath = '//a[contains(@href, "/video/")]'
 
-                posts = sb.driver.find_elements(By.XPATH, f'{div_ancestors}{post_xpath}')
+                posts_elements = sb.driver.find_elements(
+                    By.XPATH, f"{div_ancestors}{post_xpath}"
+                )
 
-                last_video = Video(posts[-1])
+                last_video = Video(posts_elements[-1])
 
                 while last_video.date > task_config.published_after - timedelta(days=1):
-                    sb.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    sb.driver.execute_script(
+                        "window.scrollTo(0, document.body.scrollHeight);"
+                    )
 
                     time.sleep(random.randint(2, 8))
 
-                    posts = sb.driver.find_elements(By.XPATH, f'{div_ancestors}{post_xpath}')
+                    posts_elements = sb.driver.find_elements(
+                        By.XPATH, f"{div_ancestors}{post_xpath}"
+                    )
 
-                    last_post = posts[-1]
-                    last_video = Video(last_post)
+                    last_post_element = posts_elements[-1]
+                    last_video = Video(last_post_element)
 
-                all_posts = sb.driver.find_elements(By.XPATH, f'{div_ancestors}{post_xpath}')
+                all_posts = sb.driver.find_elements(
+                    By.XPATH, f"{div_ancestors}{post_xpath}"
+                )
 
                 time.sleep(random.randint(1, 20))
 
                 all_videos = [Video(post) for post in all_posts]
 
-                videos = [v for v in all_videos
-                          if task_config.published_after <= v.date and v.date <= task_config.published_before]
+                videos = [
+                    v
+                    for v in all_videos
+                    if task_config.published_after <= v.date
+                    and v.date <= task_config.published_before
+                ]
 
                 posts = [
                     PostListResultItem(
@@ -199,11 +213,15 @@ class TiktokExtractorSB(DataExtractor):
                 )
                 sb.driver.uc_open_with_reconnect(user_agnostic_video_url)
 
-                videostatsV2_xpath = '//script[@id="__UNIVERSAL_DATA_FOR_REHYDRATION__"]'
+                videostatsV2_xpath = (
+                    '//script[@id="__UNIVERSAL_DATA_FOR_REHYDRATION__"]'
+                )
                 videostatsV2 = sb.driver.find_element(By.XPATH, videostatsV2_xpath)
-                video_cmplt_json = json.loads(videostatsV2.get_attribute('innerHTML'))
+                video_cmplt_json = json.loads(videostatsV2.get_attribute("innerHTML"))
 
-                video_data = video_cmplt_json['__DEFAULT_SCOPE__']['webapp.video-detail']['itemInfo']['itemStruct']
+                video_data = video_cmplt_json["__DEFAULT_SCOPE__"][
+                    "webapp.video-detail"
+                ]["itemInfo"]["itemStruct"]
 
                 self._write_video_dict_to_disk(video_id=video_id, raw_data=video_data)
 
@@ -247,17 +265,22 @@ class TiktokExtractorSB(DataExtractor):
     ) -> PostDetailsExtractionResult:
 
         video_id = video_data["id"]
-        author_unique_id = video_data['author']["uniqueId"]
+        author_unique_id = video_data["author"]["uniqueId"]
         video_url = f"https://www.tiktok.com/@{author_unique_id}/video/{video_id}"
         content_descs = "\n".join(
-            [(c.get("desc", "")).encode("cp1252", errors="ignore").decode("cp1252") for c in video_data.get("contents", [])]
+            [
+                (c.get("desc", "")).encode("cp1252", errors="ignore").decode("cp1252")
+                for c in video_data.get("contents", [])
+            ]
         )
 
         videos_statsV2 = video_data.get("statsV2", {})
         return PostDetailsExtractionResult(
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=video_url,
-            title=(video_data.get("desc", "")).encode("cp1252", errors="ignore").decode("cp1252"),
+            title=(video_data.get("desc", ""))
+            .encode("cp1252", errors="ignore")
+            .decode("cp1252"),
             description=content_descs,
             comment_count=int(videos_statsV2.get("commentCount", 0)),
             view_count=int(videos_statsV2.get("playCount", 0)),
@@ -272,7 +295,7 @@ class TiktokExtractorSB(DataExtractor):
             text_content="",  # nto relevant for video posts
         )
 
+
 class TiktokExtractionException(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
-
