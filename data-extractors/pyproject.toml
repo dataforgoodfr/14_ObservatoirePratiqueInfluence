@@ -28,7 +28,7 @@ module = "api_client.*"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["TikTokApi", "diskcache"]
+module = ["TikTokApi", "diskcache", "seleniumbase"]
 follow_untyped_imports = true
 
 [tool.ruff]
