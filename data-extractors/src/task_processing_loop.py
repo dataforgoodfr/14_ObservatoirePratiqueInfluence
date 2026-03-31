@@ -1,6 +1,7 @@
 import logging
 
 import time
+import traceback
 
 import requests
 from extraction_task.extraction_task import (
@@ -79,7 +80,9 @@ class TaskProcessingLoop:
                         task.id,
                         error_message,
                     )
-                    self._task_service.mark_task_failed(task, error_message)
+                    self._task_service.mark_task_failed(
+                        task, "\n".join(traceback.format_exception(e))
+                    )
                     failure_count += 1
                     if (
                         isinstance(self._exit_after_tasks_failure, bool)
