@@ -8,7 +8,7 @@ from pathlib import Path
 from TikTokApi import TikTokApi
 
 from data_extractors.data_extractor import DataExtractor
-from data_extractors.tiktok.tiktokapi import (
+from data_extractors.tiktok.tta.tiktokapi import (
     TikTokApiConfig,
     create_sessions,
     get_videos_for_date_range,
@@ -27,7 +27,14 @@ from extraction_task.extraction_task_result import (
 logger = logging.getLogger(__name__)
 
 
-class TiktokExtractorV2(DataExtractor):
+class TiktokExtractorTTA(DataExtractor):
+    """TikTok data extractor using the TikTokApi library.
+    Args:
+        api_config: Configuration for TikTokApi including session credentials.
+        raw_data_folder: Directory path for storing raw API responses.
+        write_raw_data_to_disk: Whether to write raw API data to disk for caching.
+    """
+
     def __init__(
         self,
         api_config: TikTokApiConfig,

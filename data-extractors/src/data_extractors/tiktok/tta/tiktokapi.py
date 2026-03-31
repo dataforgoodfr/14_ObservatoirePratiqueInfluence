@@ -13,10 +13,10 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
-async def get_ms_tokens() -> list[str]:
+async def get_ms_tokens(headless: bool) -> list[str]:
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=False,
+            headless=headless,
         )
         page = await browser.new_page()
 
@@ -113,7 +113,7 @@ async def create_sessions(api: TikTokApi, config: TikTokApiConfig) -> None:
     if config.ms_token is None:
         ms_tokens = None
     elif config.ms_token.lower() == "playwright":
-        ms_tokens = await get_ms_tokens()
+        ms_tokens = await get_ms_tokens(headless=config.headless)
     else:
         ms_tokens = [config.ms_token]
     await api.create_sessions(
