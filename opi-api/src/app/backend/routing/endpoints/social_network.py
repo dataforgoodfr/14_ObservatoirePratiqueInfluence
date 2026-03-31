@@ -5,9 +5,10 @@ from fastapi import Depends, Response
 from app._auth import validate_api_key
 from app._config import settings
 from app.models import Account, Post
-from app.nocodb import NocoDBClient
+from app.nocodb import MissingTargetBehavior, NocoDBClient
 
 API_KEY = Depends(validate_api_key)
+
 
 async def upsert_posts(posts: list[Post], api_key: str = API_KEY) -> Response:
     client = NocoDBClient()
@@ -41,6 +42,7 @@ async def upsert_posts(posts: list[Post], api_key: str = API_KEY) -> Response:
                 "SN Brand": post.sn_brand,
                 "Post Type": post.post_type,
             },
+            on_missing_target_record=MissingTargetBehavior.CREATE,
         )
     return Response(status_code=http.HTTPStatus.NO_CONTENT)
 
