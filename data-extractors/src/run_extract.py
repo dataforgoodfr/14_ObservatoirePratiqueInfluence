@@ -1,5 +1,4 @@
 import logging
-import os
 from os import path
 from typing import Literal, Optional, Self
 
@@ -11,8 +10,8 @@ from extraction_task.api.api_extraction_task_service import ApiExtractionTaskSer
 from data_extractors.data_extractor import DataExtractor
 from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
-from data_extractors.tiktok.tiktok_extractor_v2 import TiktokExtractorV2
-from data_extractors.tiktok.tiktokapi import TikTokApiConfig
+from data_extractors.tiktok.tta.tiktok_extractor_tta import TiktokExtractorTTA
+from data_extractors.tiktok.tta.tiktokapi import TikTokApiConfig
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
@@ -34,15 +33,20 @@ class YoutubeSettings(BaseModel):
 
 
 class TiktokSettings(BaseModel):
-    implementation: Literal["V1", "V2"] = Field(
-        default="V2", description="Extractor version to use"
+    implementation: Literal["V1", "TTA"] = Field(
+        default="TTA", description="Extractor version to use"
     )
 
     ms_token: Optional[str] | Literal["PLAYWRIGHT"] = Field(
-        default="PLAYWRIGHT", description="Extractor v2: how to get ms_token"
+        default="PLAYWRIGHT", description="For TTA Extractor: how to get ms_token"
     )
     headless: bool = Field(
-        default=False, description="Extractor v2: whether to use headless mode."
+        default=True, description="For TTA Extractor: whether to use headless mode."
+    )
+
+    store_raw_data: bool = Field(
+        default=False,
+        description="For TTA Extractor: whether to store raw API data to disk for further analysis.",
     )
 
 
@@ -166,16 +170,18 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
 def create_tiktok_extractor(
     cache_folder: str, settings: TiktokSettings
 ) -> DataExtractor:
-    if os.getenv("TIKTOK_EXTRACTOR") == "V1":
+    if settings.implementation == "V1":
         return TiktokExtractor()
-    else:
-        # Default to V2
-        return TiktokExtractorV2(
+    elif settings.implementation == "TTA":
+        return TiktokExtractorTTA(
+            write_raw_data_to_disk=settings.store_raw_data,
             raw_data_folder=path.join(cache_folder, "tiktok-raw-data"),
             api_config=TikTokApiConfig(
                 headless=settings.headless, ms_token=settings.ms_token
             ),
         )
+    else:
+        raise Exception("Unexpected settings.implementation:" + settings.implementation)
 
 
 def create_youtube_extractor(
