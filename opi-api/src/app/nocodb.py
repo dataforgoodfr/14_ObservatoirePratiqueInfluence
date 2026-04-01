@@ -1,6 +1,7 @@
 """Generic NocoDB client for upserting records."""
 
 import logging
+from enum import StrEnum
 from typing import Any, NotRequired, TypedDict, Unpack
 from urllib.parse import quote
 
@@ -31,6 +32,33 @@ class TableNotFoundError(Exception):
 
 class FieldNotFoundError(Exception):
     """Exception raised when no table is found."""
+
+
+class TargetRecordNotFoundError(Exception):
+    """Exception raised when target record is missing."""
+
+    def __init__(self, table_name: str, field_name: str, target_record_logical_id: dict) -> None:
+        """Initialize the exception with details about the missing target record.
+
+        Args:
+            table_name: Name of the table where the link field exists.
+            field_name: Name of the link field that references the missing record.
+            target_record_logical_id: Logical identifier of the missing target record.
+
+        """
+        super().__init__(
+            "Missing target record. "
+            f"Trying to set {table_name}.{field_name}"
+            f" with target record logical id {target_record_logical_id}"
+        )
+
+
+class MissingTargetBehavior(StrEnum):
+    """Defines behavior when taret record is missing."""
+
+    CREATE = "CREATE"
+    RAISE = "RAISE"
+    DONT_SET = "DONT_SET"
 
 
 # TODO(iai): Merge this client with the one used in data-extractor
@@ -219,10 +247,16 @@ class NocoDBClient:
         return response.get("fields", [])
 
     def _get_link_field_id(self, table_id: str, field_name: str) -> str:
+        return self._get_field_def_by_name(table_id, field_name)["id"]
+
+    def _get_link_field_target_table_id(self, table_id: str, field_name: str) -> str:
+        return self._get_field_def_by_name(table_id, field_name)["options"]["related_table_id"]
+
+    def _get_field_def_by_name(self, table_id: str, field_name: str) -> dict[str, Any]:
         columns = self._get_table_fields(table_id)
         for column in columns:
             if column.get("title") == field_name:
-                return column["id"]
+                return column
 
         message = f"Link field '{field_name}' not found in table"
         raise FieldNotFoundError(message)
@@ -256,6 +290,7 @@ class NocoDBClient:
         linked_field_mappings: dict[str, Any],
         logical_id: dict[str, Any],
         record: dict[str, Any],
+        on_missing_target_record: MissingTargetBehavior = MissingTargetBehavior.DONT_SET,
     ) -> NocoRecord:
         """Upserts record into NOCODB."""
         table_id = self._get_table_id(table_name)
@@ -274,11 +309,41 @@ class NocoDBClient:
             LOGGER.debug("Created record %s with id %s", logical_id, result["id"])
 
         for field_name, mapping in linked_field_mappings.items():
+            target_record_logical_id = mapping["lookup"]
+            target_table_name = mapping["target_table"]
             link_field_id = self._get_link_field_id(table_id, field_name)
             target_record_id = self._find_record_id_by_logical_id(
-                mapping["target_table"], mapping["lookup"]
+                target_table_name, target_record_logical_id
             )
             if target_record_id:
+                self.link_record(
+                    from_table_id=table_id,
+                    link_field_id=link_field_id,
+                    from_record_id=result["id"],
+                    target_record_id=target_record_id,
+                )
+            elif on_missing_target_record == MissingTargetBehavior.RAISE:
+                raise TargetRecordNotFoundError(table_name, field_name, target_record_logical_id)
+            elif on_missing_target_record == MissingTargetBehavior.DONT_SET:
+                LOGGER.debug(
+                    "Not setting missing target record."
+                    " Table_name:%s, field_name: %s, target_record_id: %s",
+                    table_name,
+                    field_name,
+                    target_record_id,
+                )
+            elif on_missing_target_record == MissingTargetBehavior.CREATE:
+                LOGGER.debug(
+                    "Creating missing target record."
+                    " Table_name:%s, field_name: %s, target_record_id: %s",
+                    table_name,
+                    field_name,
+                    target_record_id,
+                )
+                target_table_id = self._get_link_field_target_table_id(table_id, field_name)
+                target_record_id = self.create_record(
+                    table_id=target_table_id, record_data=mapping["lookup"]
+                )["id"]
                 self.link_record(
                     from_table_id=table_id,
                     link_field_id=link_field_id,
