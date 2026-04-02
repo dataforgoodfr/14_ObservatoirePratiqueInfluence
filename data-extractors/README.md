@@ -8,17 +8,17 @@
 
 
 ## Run the tiktok extractor
-Run `uv run src/main.py -n tiktok` in data-extractors folder.
+Run `uv run src/main.py extract -n tiktok` in data-extractors folder.
 
 ## Run the instagram extractor
 Instagram rejects scraping when coming from non mobile connections.
 
 So you need to connect your PC to internet through your phone mobile connection using a hotspot. Ensure wifi is disabled on the phone otherwise this is useless.
-Then run `uv run src/main.py -n instagram` in data-extractors folder.
+Then run `uv run src/main.py extract -n instagram` in data-extractors folder.
 
 ## Run the youtube extractor
 * Configure the YOUTUBE__API_KEY in [.env]
-* run `uv run src/main.py -n youtube`
+* run `uv run src/main.py extract -n youtube`
 
 
 # Developpment guide
