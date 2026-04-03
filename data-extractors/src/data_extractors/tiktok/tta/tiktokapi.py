@@ -55,13 +55,13 @@ async def get_videos_for_date_range(
     published_after: datetime.datetime,
     published_before: datetime.datetime,
 ) -> list[TikTokApi.video]:
-
+    start_time = datetime.datetime.now()
     videos: list[TikTokApi.video] = []
     offset = 0
 
-    # user.videos uses async iterators so we can set an very large max_videos they will only be fetched if we don't stop before
-    max_videos = 100000
-    logger.info(f"Fetching videos for {user.username}")
+    logger.info(
+        f"Fetching videos for {user.username} in date range [{published_after}...{published_before}]"
+    )
 
     index = 0
     if published_before > datetime.datetime.now():
@@ -70,38 +70,60 @@ async def get_videos_for_date_range(
         # This is not documented but tiktok cursor looks like an epoch *1000
         cursor = round(published_before.timestamp() * 1000)
 
+    range_duration = published_before.timestamp() - published_after.timestamp()
+
+    # user.videos uses async iterators so we can set an very large max_videos they will only be fetched if we don't stop before
+    max_videos = 100000
+    processed_video_count = 0
+
     # Videos are ordered chronologically from most recent to oldest
     # Except for the first MAX_PINNED  videos when cursor=0 which can be older pinned videos
-    async for video in user.videos(count=max_videos, cursor=cursor):
+    async for video in user.videos(count=max_videos + 1, cursor=cursor):
+        processed_video_count += 1
+        progress_percent = round(
+            100
+            * (published_before.timestamp() - video.create_time.timestamp())
+            / range_duration
+        )
+        base_message_video = (
+            f"[{user.username}][{progress_percent:.0f}%] video {video.create_time}"
+        )
+
         if published_after <= video.create_time <= published_before:
-            logger.info(
-                f"Adding in range video {video.id} - created at {video.create_time}"
-            )
             videos.append(video)
+            logger.info(
+                base_message_video + f" - added as {len(videos) + 1}th video in range"
+            )
         elif (
             published_after > video.create_time
             and cursor == 0
             and index + offset < MAX_PINNED
         ):
             logger.info(
-                f"Skipping potentially pinned before range video {video.id} - created at {video.create_time}"
+                base_message_video + " - skipped (before range but in MAX_PINNED)"
             )
         elif published_after > video.create_time:
-            logger.info(
-                f"Stopping at before range video {video.id} created at {video.create_time}"
-            )
-            return videos
+            logger.info(base_message_video + " - we are done (before range).")
+            break
         else:
-            logger.info(
-                f"Skipping after range video {video.id} - created at {video.create_time}"
-            )
+            logger.info(base_message_video + " - ignoring (after range).")
 
         random_sleep = random.uniform(1, 3)
-        logger.info(f"Sleeping for random duration {random_sleep}s")
+        logger.debug(f"Sleeping for random duration {random_sleep:0.1f}s")
         await asyncio.sleep(random_sleep)
         index += 1
 
-    raise Exception("With reached the max_videos defined!!!")
+    # End of cursor reached
+    if processed_video_count > max_videos:
+        raise Exception("max_videos reached before reaching end of range")
+    else:
+        fetch_duration = datetime.datetime.now().timestamp() - start_time.timestamp()
+        average_speed = len(videos) / fetch_duration
+
+        logger.info(
+            f"[{user.username}] get_videos took {(fetch_duration / 1000):.0f}s for {len(videos)} videos ({average_speed:.2f} video/s)."
+        )
+        return videos
 
 
 class TikTokApiConfig(BaseModel):
