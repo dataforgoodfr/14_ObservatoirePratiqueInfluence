@@ -34,6 +34,7 @@ class GenerateTaskSettings(BaseSettings):
         nested_model_default_partial_update=True,
         env_nested_delimiter="__",
         extra="ignore",
+        env_prefix="GENERATE_TASK_",
     )
     task_type: Literal["all", "account", "post-list"] = Field(
         default="all", description="Which task types to generate"
@@ -53,7 +54,7 @@ class GenerateTaskSettings(BaseSettings):
     )
 
     backend: Literal["fs", "api"] = Field(
-        default="api",
+        default="fs",
         description="Configure whether to use filesystem or server for tasks storage",
     )
 
