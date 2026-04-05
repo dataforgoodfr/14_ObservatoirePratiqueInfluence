@@ -48,6 +48,10 @@ async def get_ms_tokens(headless: bool) -> list[str]:
 
 # TIKTOK maximum number of pinned videos
 MAX_PINNED = 3
+# Mminium sleep seconds between videos iteration
+MIN_WAIT = 1
+# Maxium sleep seconds between videos iteration
+MAX_WAIT = 3
 
 
 async def get_videos_for_date_range(
@@ -108,7 +112,8 @@ async def get_videos_for_date_range(
         else:
             logger.info(base_message_video + " - ignoring (after range).")
 
-        random_sleep = random.uniform(1, 3)
+        # Use triangular to have more short waits than long waits
+        random_sleep = random.triangular(MIN_WAIT, MAX_WAIT, MIN_WAIT)
         logger.debug(f"Sleeping for random duration {random_sleep:0.1f}s")
         await asyncio.sleep(random_sleep)
         index += 1
