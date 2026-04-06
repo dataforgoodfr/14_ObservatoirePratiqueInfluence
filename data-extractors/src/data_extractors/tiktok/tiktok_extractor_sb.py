@@ -26,7 +26,7 @@ from extraction_task.extraction_task_result import (
     AccountExtractionResult,
     PostDetailsExtractionResult,
     PostListExtractionResult,
-    PostListResultItem,
+
 )
 
 logger = logging.getLogger(__name__)
@@ -36,13 +36,11 @@ class TiktokExtractorSB(DataExtractor):
     def __init__(
         self,
         cache_folder: str,
-        cache_ttl_seconds: int,
         write_raw_data_to_disk: bool = False,
     ) -> None:
         self.cache = diskcache.Cache(
             directory=cache_folder,
         )
-        self.cache_ttl_seconds = cache_ttl_seconds
         # Whether to store raw API data for further analysis/reuse
         self.write_raw_data = write_raw_data_to_disk
         if write_raw_data_to_disk:
@@ -107,7 +105,7 @@ class TiktokExtractorSB(DataExtractor):
             f"published_before: {task_config.published_before}"
         )
 
-        posts: list[PostListResultItem] = []
+        posts: list[PostDetailsExtractionResult] = []
 
         try:
             with SB(uc=True, headless=False) as sb:
@@ -152,39 +150,34 @@ class TiktokExtractorSB(DataExtractor):
                     )
 
                     last_post_element = posts_elements[-1]
+
                     last_video = Video(last_post_element)
 
                 all_posts = sb.driver.find_elements(
                     By.XPATH, f"{div_ancestors}{post_xpath}"
                 )
-
+                all_videos = [Video(post) for post in all_posts]
                 time.sleep(random.randint(1, 20))
 
-                all_videos = [Video(post) for post in all_posts]
+            videos_ids = [
+                v.id
+                for v in all_videos
+                if task_config.published_after <= v.date
+                and v.date <= task_config.published_before
+            ]
 
-                videos = [
-                    v
-                    for v in all_videos
-                    if task_config.published_after <= v.date
-                    and v.date <= task_config.published_before
-                ]
+            posts = [
+                self._extract_post_details_from_id(v_id)
+                for v_id in videos_ids
+            ]
 
-                posts = [
-                    PostListResultItem(
-                        post_id=v.id,
-                        published_at=v.date,
-                    )
-                    for v in videos
-                ]
+            logger.info(
+                f"Found {len(posts)} posts for {task_config.account_id} in date range"
+            )
 
-                logger.info(
-                    f"Found {len(posts)} posts for {task_config.account_id} in date range"
-                )
-
-                return PostListExtractionResult(
-                    data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
-                    posts=posts,
-                )
+            return PostListExtractionResult(
+                posts=posts,
+            )
 
         except Exception as e:
             message = (
@@ -207,34 +200,7 @@ class TiktokExtractorSB(DataExtractor):
                 logger.info(f"CACHED_POST found for: {video_id}")
                 return cached_value
 
-            with SB(uc=True, headless=True) as sb:
-                user_agnostic_video_url = (
-                    f"https://www.tiktok.com/@tiktok/video/{video_id}"
-                )
-                sb.driver.uc_open_with_reconnect(user_agnostic_video_url)
-
-                videostatsV2_xpath = (
-                    '//script[@id="__UNIVERSAL_DATA_FOR_REHYDRATION__"]'
-                )
-                videostatsV2 = sb.driver.find_element(By.XPATH, videostatsV2_xpath)
-                video_cmplt_json = json.loads(videostatsV2.get_attribute("innerHTML"))
-
-                video_data = video_cmplt_json["__DEFAULT_SCOPE__"][
-                    "webapp.video-detail"
-                ]["itemInfo"]["itemStruct"]
-
-                self._write_video_dict_to_disk(video_id=video_id, raw_data=video_data)
-
-                post_details_result = self._build_post_details_result_from_video(
-                    video_data
-                )
-                self.cache.set(
-                    cache_key,
-                    post_details_result,
-                    expire=self.cache_ttl_seconds,
-                )
-
-                return post_details_result
+            return self._extract_post_details_from_id(video_id)
         except Exception as e:
             message = (
                 f"Failed to extract post details for video id: {task_config.post_id}"
@@ -259,11 +225,37 @@ class TiktokExtractorSB(DataExtractor):
     def _video_cache_key(self, video_id: str) -> str:
         return f"tiktok_video_{video_id}"
 
+    def _extract_post_details_from_id(self, video_id: str,
+                                      )->PostDetailsExtractionResult:
+        with SB(uc=True, headless=True) as sb:
+                user_agnostic_video_url = (
+                    f"https://www.tiktok.com/@tiktok/video/{video_id}"
+                )
+                sb.driver.uc_open_with_reconnect(user_agnostic_video_url)
+
+                videostatsV2_xpath = (
+                    '//script[@id="__UNIVERSAL_DATA_FOR_REHYDRATION__"]'
+                )
+                videostatsV2 = sb.driver.find_element(By.XPATH, videostatsV2_xpath)
+                video_cmplt_json = json.loads(videostatsV2.get_attribute("innerHTML"))
+
+                video_data = video_cmplt_json["__DEFAULT_SCOPE__"][
+                    "webapp.video-detail"
+                ]["itemInfo"]["itemStruct"]
+
+                self._write_video_dict_to_disk(video_id=video_id,
+                                               raw_data=video_data)
+
+                post_details_result = self._build_post_details_result_from_video(
+                    video_data
+                )
+
+        return post_details_result
+
     def _build_post_details_result_from_video(
         self,
         video_data: dict,
     ) -> PostDetailsExtractionResult:
-
         video_id = video_data["id"]
         author_unique_id = video_data["author"]["uniqueId"]
         video_url = f"https://www.tiktok.com/@{author_unique_id}/video/{video_id}"
@@ -276,6 +268,7 @@ class TiktokExtractorSB(DataExtractor):
 
         videos_statsV2 = video_data.get("statsV2", {})
         return PostDetailsExtractionResult(
+            post_id=video_id,
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=video_url,
             title=(video_data.get("desc", ""))
