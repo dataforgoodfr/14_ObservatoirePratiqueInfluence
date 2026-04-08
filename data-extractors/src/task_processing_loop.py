@@ -91,7 +91,7 @@ class TaskProcessingLoop:
                         isinstance(self._exit_after_tasks_failure, int)
                         and self._exit_after_tasks_failure <= failure_count
                     ):
-                        logger.info("Reached max failure -> Existing")
+                        logger.info("Reached max failure -> Exiting")
                         raise e
 
     def execute_task(self, task: ExtractionTask) -> ExtractionTaskResult:
