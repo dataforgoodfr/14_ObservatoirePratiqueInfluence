@@ -27,33 +27,29 @@ export function Navbar() {
             />
           </Link>
           <div className="flex flex-col leading-none">
-            <span className="text-xs font-bold text-foreground uppercase italic">
+            <span className="text-xs text-foreground uppercase italic">
               {"Paye ton "}
+              <em className="font-black italic text-highlight">influence</em>
             </span>
-            <em className="font-black italic text-highlight">influence</em>
-            <div className="italic text-[0.6rem] hidden lg:block">
-              (Tracking des collaborations non éthiques)
-            </div>
           </div>
 
           {/* Desktop nav */}
           <div className="ml-auto hidden items-center gap-10 md:flex">
             <Link
               href="/key-metrics"
-              className="relative text-sm font-bold text-foreground"
+              className="relative text-base font-bold text-foreground"
             >
               Les chiffres
             </Link>
             <Link
               href="/about-us"
-              className="relative flex items-center gap-1.5 text-sm font-bold text-foreground"
+              className="relative flex items-center gap-1.5 text-base font-bold text-foreground"
             >
-              <CircleHelp className="h-4 w-4" />
-              Qui sommes nous
+              Qui sommes-nous
             </Link>
             <Link
               href="/report-collaboration"
-              className="rounded-full bg-highlight font--bold px-5 py-2 text-foreground hover:bg-highlight/75"
+              className="rounded-full bg-highlight font--bold px-5 py-2 text-foreground text-base hover:bg-highlight/75"
             >
               Signaler une collaboration
             </Link>
