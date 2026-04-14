@@ -8,11 +8,12 @@ export default function Home() {
         <Container>
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
-              <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] font-black text-muted leading-[1.1] mb-6">
+              <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] text-center font-black text-muted leading-[1.1] mb-6">
                 {"Observatoire des pratiques de "}
                 <em className="font-italic text-highlight">{"l'influence"}</em>
               </h1>
-              <p className="text-white font-light nb-10">
+
+              <p className="text-white text-center font-light mb-10 text-lg">
                 {
                   "Réveillons le monde de l'influence sur les questions climatiques et sociales en analysant les pratiques d'influence en France."
                 }
