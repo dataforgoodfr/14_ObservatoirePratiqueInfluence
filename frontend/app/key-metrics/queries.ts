@@ -1,11 +1,11 @@
-import { nocoApi } from "@/lib/nocodb";
-import { ScrappInfluencerPRODResponse } from "@/generated-types/Api";
+import { getMetabaseEmbedUrl } from "@/lib/metabase";
 
-export async function listInfluencers(): Promise<
-  ScrappInfluencerPRODResponse[]
-> {
-  const { data } = await nocoApi.scrappInfluencerProdDbTableRowList({
-    pageSize: 10,
-  });
-  return data.records;
+/**
+ * Récupère l'URL d'embedding pour le dashboard de test.
+ */
+export async function getDashboardEmbedUrl(
+  dashboardId: number,
+): Promise<string> {
+  const params: Record<string, string> = {};
+  return getMetabaseEmbedUrl(dashboardId, params);
 }
