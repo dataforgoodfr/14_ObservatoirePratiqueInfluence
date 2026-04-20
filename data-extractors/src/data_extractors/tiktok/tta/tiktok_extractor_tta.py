@@ -114,6 +114,10 @@ class TiktokExtractorTTA(DataExtractor):
                     task_config.published_after.replace(tzinfo=None),
                     task_config.published_before.replace(tzinfo=None),
                 )
+                for video in videos:
+                    self._write_video_dict_to_disk(
+                        video_id=video.id, raw_data=video.as_dict
+                    )
 
                 posts = [
                     self._build_post_details_result_from_video(
