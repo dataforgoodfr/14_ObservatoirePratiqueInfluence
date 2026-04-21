@@ -15,6 +15,7 @@ dependencies = [
     "tiktokapi>=7.3.0",
     "python-dateutil>=2.9.0.post0",
     "typing-extensions>=4.15.0",
+    "seleniumbase>=4.46.5"
 ]
 
 [tool.mypy]
@@ -27,7 +28,7 @@ module = "api_client.*"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["TikTokApi", "diskcache"]
+module = ["TikTokApi", "diskcache", "seleniumbase"]
 follow_untyped_imports = true
 
 [tool.ruff]

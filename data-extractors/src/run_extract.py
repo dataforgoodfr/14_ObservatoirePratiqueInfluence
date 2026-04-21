@@ -12,6 +12,7 @@ from data_extractors.instagram.instagram_extractor import InstagramExtractor
 from data_extractors.tiktok.tiktok_extractor import TiktokExtractor
 from data_extractors.tiktok.tta.tiktok_extractor_tta import TiktokExtractorTTA
 from data_extractors.tiktok.tta.tiktokapi import TikTokApiConfig
+from data_extractors.tiktok.tiktok_extractor_sb import TiktokExtractorSB
 from data_extractors.youtube.disk_cache import DiskCacheConfig
 from data_extractors.youtube.youtube_api_config import YoutubeApiConfig
 from data_extractors.youtube.youtube_extractor import YoutubeExtractor
@@ -33,7 +34,7 @@ class YoutubeSettings(BaseModel):
 
 
 class TiktokSettings(BaseModel):
-    implementation: Literal["V1", "TTA"] = Field(
+    implementation: Literal["V1", "TTA", "SB"] = Field(
         default="TTA", description="Extractor version to use"
     )
 
@@ -158,7 +159,7 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
     extractors = {
         SocialNetwork.INSTAGRAM: InstagramExtractor,
         SocialNetwork.TIKTOK: lambda: create_tiktok_extractor(
-            config.cache_folder, config.tiktok
+            config.cache_folder, config.cache_ttl_seconds, config.tiktok
         ),
         SocialNetwork.YOUTUBE: lambda: create_youtube_extractor(
             config.cache_folder, config.cache_ttl_seconds, config.youtube
@@ -168,7 +169,7 @@ def create_extractor(config: ExtractSettings) -> DataExtractor:
 
 
 def create_tiktok_extractor(
-    cache_folder: str, settings: TiktokSettings
+    cache_folder: str, cache_ttl_seconds: int, settings: TiktokSettings
 ) -> DataExtractor:
     if settings.implementation == "V1":
         return TiktokExtractor()
@@ -179,6 +180,11 @@ def create_tiktok_extractor(
             api_config=TikTokApiConfig(
                 headless=settings.headless, ms_token=settings.ms_token
             ),
+        )
+    elif settings.implementation == "SB":
+        return TiktokExtractorSB(
+            cache_folder=path.join(cache_folder, "tiktok"),
+            cache_ttl_seconds=cache_ttl_seconds,
         )
     else:
         raise Exception("Unexpected settings.implementation:" + settings.implementation)
