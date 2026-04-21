@@ -111,14 +111,26 @@ class InstagramExtractor(DataExtractor):
                     profile.get_posts(),
                     task_config.published_after,
                     task_config.published_before,
-                    f"[{task_config.account_id}]",
+                    f"[{task_config.account_id}][posts]",
                 )
             )
 
-            logger.info(f"Returning {len(posts)} posts for {task_config.account_id}")
+            logger.info("Fetching instagram reels...")
+            reels: list[PostDetailsExtractionResult] = (
+                self._fetch_post_details_from_iterator(
+                    profile.get_reels(),
+                    task_config.published_after,
+                    task_config.published_before,
+                    f"[{task_config.account_id}][reels]",
+                )
+            )
+            all_posts = posts + reels
+            logger.info(
+                f"Returning {len(all_posts)} posts ({len(posts)} posts and {len(reels)} reels) for {task_config.account_id}"
+            )
 
             return PostListExtractionResult(
-                posts=posts,
+                posts=all_posts,
             )
         except Exception as e:
             logger.error(
