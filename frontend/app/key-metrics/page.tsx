@@ -1,6 +1,13 @@
 import { MetabaseEmbed } from "@/components/MetabaseEmbed";
 import { getDashboardEmbedUrl } from "./queries";
 
+// Next.js App Router : désactive le cache pour cette page.
+// Le JWT Metabase embarqué dans le HTML expire après 10 min,
+// il faut donc en générer un nouveau à chaque requête.
+// Voir https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+// NE PAS SUPPRIMER
+export const dynamic = "force-dynamic";
+
 const TEST_DASHBOARD_ID = 5;
 
 export default async function KeyMetricsPage() {
