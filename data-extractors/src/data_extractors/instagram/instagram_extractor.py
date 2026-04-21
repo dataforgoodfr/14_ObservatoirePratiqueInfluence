@@ -1,3 +1,5 @@
+from pydantic import AwareDatetime
+
 from data_extractors.data_extractor import DataExtractor
 from extraction_task.extraction_task_config import (
     ExtractAccountTaskConfig,
@@ -16,7 +18,7 @@ from datetime import timezone
 import logging
 
 import instaloader
-from instaloader import Post
+from instaloader import NodeIterator, Post
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,9 @@ class InstagramExtractor(DataExtractor):
             title=post.title if post.title else "No title",
             description=post.caption if post.caption is not None else "",
             comment_count=post.comments,
-            view_count=0,  # No data on instagram
+            view_count=post.video_view_count
+            if post.is_video and post.video_view_count
+            else 0,  # No data for non video posts on instagram
             like_count=post.likes,
             repost_count=0,  # No data on instagram
             share_count=0,  # No data on instagram
@@ -97,32 +101,24 @@ class InstagramExtractor(DataExtractor):
                 f"published_after: {task_config.published_after}, "
                 f"published_before: {task_config.published_before}",
             )
-            posts = instaloader.Profile.from_username(
+            profile = instaloader.Profile.from_username(
                 self.L.context, task_config.account_id
-            ).get_posts()
-
-            posts_ret: list[PostDetailsExtractionResult] = []
-            for i, post in enumerate(posts):
-                d3 = post.date.replace(tzinfo=timezone.utc)
-                # On instagram, users can pin up to 3 posts on their profiles.
-                # So when scrapping a profile, the posts 1, 2 and 3 can be posts from any dates.
-                # Additionnaly the posts are ranked in a chronological ordrer from the most recent to the oldest (appart from the first 3 ones).
-                # So we need to stop collecting posts whenever we reach a post with a date under our published_after date and that this post is not part of the 3 pinned posts.
-                if (i > 3) and (d3 < task_config.published_after):
-                    break
-                if (d3 < task_config.published_before) and (
-                    d3 > task_config.published_after
-                ):
-                    post_details = self._create_post_details_from_post(post)
-                    posts_ret.append(post_details)
-
-                time.sleep(random.uniform(2, 6))
-
-            logger.info(
-                f"Returning {len(posts_ret)} posts for {task_config.account_id}"
             )
+
+            logger.info("Fetching instagram posts...")
+            posts: list[PostDetailsExtractionResult] = (
+                self._fetch_post_details_from_iterator(
+                    profile.get_posts(),
+                    task_config.published_after,
+                    task_config.published_before,
+                    f"[{task_config.account_id}]",
+                )
+            )
+
+            logger.info(f"Returning {len(posts)} posts for {task_config.account_id}")
+
             return PostListExtractionResult(
-                posts=posts_ret,
+                posts=posts,
             )
         except Exception as e:
             logger.error(
@@ -131,6 +127,67 @@ class InstagramExtractor(DataExtractor):
             raise Exception(
                 f"Failed to extract post list for {task_config.account_id}"
             ) from e
+
+    def _fetch_post_details_from_iterator(
+        self,
+        posts_iterator: NodeIterator[Post],
+        published_after: AwareDatetime,
+        published_before: AwareDatetime,
+        log_prefix: str,
+    ) -> list[PostDetailsExtractionResult]:
+        posts_ret: list[PostDetailsExtractionResult] = []
+        start_time = datetime.datetime.now()
+        span_to_cover_duration = start_time.timestamp() - published_after.timestamp()
+
+        for index, post in enumerate(posts_iterator):
+            post_date = post.date.replace(tzinfo=timezone.utc)
+            progress_percent = (
+                round(
+                    100
+                    * (start_time.timestamp() - post_date.timestamp())
+                    / span_to_cover_duration
+                )
+                if span_to_cover_duration > 0
+                else 100
+            )
+            base_log_message = (
+                log_prefix
+                + f"[{progress_percent:.0f}%] post {post.shortcode}[{post_date}]"
+            )
+
+            if published_after <= post_date <= published_before:
+                post_details = self._create_post_details_from_post(post)
+                posts_ret.append(post_details)
+                logger.info(
+                    base_log_message + f" - added as {len(posts_ret)}th post in range"
+                )
+            elif published_after > post_date and index < MAX_PINNED:
+                # On instagram, users can pin up to 3 posts on their profiles.
+                # So when scrapping a profile, the posts 1, 2 and 3 can be posts from any dates.
+                logger.info(
+                    base_log_message + " - skipped (before range but in MAX_PINNED)"
+                )
+            elif published_after > post_date and index >= MAX_PINNED:
+                # The posts are ranked in a chronological ordrer from the most recent to the oldest (appart from the pinned posts).
+                # We need to stop collecting posts whenever we reach a post with a date under our published_after date and that this post is not part of the 3 pinned posts.
+                logger.info(base_log_message + " - we are done (before range).")
+                break
+            else:
+                logger.info(base_log_message + " - ignoring (after range).")
+
+            random_sleep = random.uniform(2, 6)
+            logger.debug(f"Sleeping for random duration {random_sleep:0.1f}s")
+            time.sleep(random_sleep)
+
+        # End of cursor reached
+        fetch_duration = datetime.datetime.now().timestamp() - start_time.timestamp()
+        average_speed = len(posts_ret) / fetch_duration if fetch_duration > 0 else 0
+
+        logger.info(
+            log_prefix
+            + f" - fetch_posts took {(fetch_duration / 1000):.0f}s for {len(posts_ret)} posts ({average_speed:.2f} posts/s)."
+        )
+        return posts_ret
 
     def extract_post_details(
         self, task_config: ExtractPostDetailsTaskConfig
@@ -150,3 +207,7 @@ class InstagramExtractor(DataExtractor):
             raise Exception(
                 f"Failed to extract post detail for {task_config.post_id}"
             ) from e
+
+
+# INstagram max pinned
+MAX_PINNED = 3
