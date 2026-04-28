@@ -1,3 +1,5 @@
+import logging
+
 from api_client import api_client
 from api_client.api import DefaultApi
 from extraction_task.extraction_task import (
@@ -29,6 +31,8 @@ from api_client.models import (
 )
 
 from extraction_task.social_network import SocialNetwork as DomainSocialNetwork
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ApiExtractionTaskService(ExtractionTaskService):
@@ -69,6 +73,7 @@ class ApiExtractionTaskService(ExtractionTaskService):
     ) -> None:
         """Mark a task as completed and process the result."""
 
+        LOGGER.info("Upserting data...")
         # Handle different task types
         if isinstance(task_result, AccountExtractionResult):
             assert isinstance(task.task_config, DomainExtractAccountTaskConfig)
@@ -89,6 +94,7 @@ class ApiExtractionTaskService(ExtractionTaskService):
             raise ValueError(f"Unknown task result type: {type(task_result)}")
 
         # Mark task as completed
+        LOGGER.info("Marking extraction task complete")
         self._api.mark_completed_extraction_task_task_uid_mark_completed_post(
             task.id,
         )
@@ -161,4 +167,13 @@ class ApiExtractionTaskService(ExtractionTaskService):
             for post_details in post_details_list
         ]
 
-        self._api.upsert_posts_posts_post(api_posts)
+        chunk_size = 300
+        api_posts_chunks = [
+            api_posts[i : i + chunk_size] for i in range(0, len(api_posts), chunk_size)
+        ]
+
+        for chunkIndex, chunk in enumerate(api_posts_chunks):
+            LOGGER.info(
+                "upserting post chunk %s/%s", chunkIndex + 1, len(api_posts_chunks)
+            )
+            self._api.upsert_posts_posts_post(chunk)

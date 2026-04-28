@@ -96,7 +96,7 @@ async def get_videos_for_date_range(
         if published_after <= video.create_time <= published_before:
             videos.append(video)
             logger.info(
-                base_message_video + f" - added as {len(videos) + 1}th video in range"
+                base_message_video + f" - added as {len(videos)}th video in range"
             )
         elif (
             published_after > video.create_time
