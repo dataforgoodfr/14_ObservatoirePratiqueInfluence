@@ -114,5 +114,8 @@ class TaskExecutionFailedError(Exception):
 
 
 def get_my_public_ip() -> str:
-    response = requests.get("https://api4.my-ip.io/v2/ip.json")
-    return response.json()["ip"]
+    try:
+        response = requests.get("https://api4.my-ip.io/v2/ip.json")
+        return response.json()["ip"]
+    except Exception:
+        return "unknown-ip"
