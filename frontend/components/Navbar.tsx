@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CircleHelp, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Container } from "./Container";
+import { Highlight } from "@/components/Highlight";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +30,13 @@ export function Navbar() {
           <div className="flex flex-col leading-none">
             <span className="text-xs text-foreground uppercase italic">
               {"Paye ton "}
-              <em className="font-black italic text-highlight">influence</em>
+              <Highlight
+                textClassName="text-bold text-base"
+                bgClassName="bg-highlight-marker-hero"
+              >
+                {"influence"}
+              </Highlight>
+              {/* <em className="font-black italic text-highlight">influence</em> */}
             </span>
           </div>
 
@@ -49,7 +56,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/report-collaboration"
-              className="rounded-full bg-highlight font--bold px-5 py-2 text-foreground text-base hover:bg-highlight/75"
+              className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
             >
               Signaler une collaboration
             </Link>

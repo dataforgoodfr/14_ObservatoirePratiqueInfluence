@@ -1,5 +1,7 @@
 import { MetabaseEmbed } from "@/components/MetabaseEmbed";
 import { getDashboardEmbedUrl } from "./queries";
+import { Container } from "@/components/Container";
+import { Highlight } from "@/components/Highlight";
 
 // Next.js App Router : désactive le cache pour cette page.
 // Le JWT Metabase embarqué dans le HTML expire après 10 min,
@@ -14,11 +16,32 @@ export default async function KeyMetricsPage() {
   const embedUrl = await getDashboardEmbedUrl(TEST_DASHBOARD_ID);
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="text-2xl font-bold text-foreground">Les chiffres</h1>
-      <div className="mt-8">
-        <MetabaseEmbed embedUrl={embedUrl} title="Quelques chiffres" />
-      </div>
+    <main className="min-h-screen font-sans bg-background">
+      <section aria-label="Hero" className="flex-1 py-15 bg-muted">
+        <Container>
+          <div className="background-secondary rounded-3xl">
+            <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
+              <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] text-center font-black text-muted leading-[1.1] mb-6">
+                {"Les "}
+                <Highlight bgClassName="bg-highlight-marker-hero">
+                  {" chiffres "}
+                </Highlight>
+                {"derrière les "}
+                <Highlight bgClassName="bg-highlight-marker-hero">
+                  {" posts"}
+                </Highlight>
+              </h1>
+
+              <p className="text-white text-center font-light mb-10">
+                {"Réveillons le monde de l'influence sur les questions "}
+                {"climatiques et sociales"}
+                {" en analysant les pratiques d'influence en France."}
+              </p>
+            </div>
+          </div>
+        </Container>
+      </section>
+      <MetabaseEmbed embedUrl={embedUrl} title="Quelques chiffres" />
     </main>
   );
 }

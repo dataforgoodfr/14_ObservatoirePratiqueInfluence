@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { Highlight } from "@/components/Highlight";
 
 export default function Home() {
   return (
@@ -10,13 +11,15 @@ export default function Home() {
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
               <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] text-center font-black text-muted leading-[1.1] mb-6">
                 {"Observatoire des pratiques de "}
-                <em className="font-italic text-highlight">{"l'influence"}</em>
+                <Highlight bgClassName="bg-highlight-marker-hero">
+                  {"l'influence"}
+                </Highlight>
               </h1>
 
               <p className="text-white text-center font-light mb-10">
-                {
-                  "Réveillons le monde de l'influence sur les questions climatiques et sociales en analysant les pratiques d'influence en France."
-                }
+                {"Réveillons le monde de l'influence sur les questions "}
+                {"climatiques et sociales"}
+                {" en analysant les pratiques d'influence en France."}
               </p>
             </div>
           </div>
@@ -29,9 +32,7 @@ export default function Home() {
             <div className="flex flex-col gap-6 w-full lg:w-1/2">
               <h2 className="text-foreground font-bold leading-tight text-3xl md:text-4xl">
                 {"Pourquoi un observatoire de "}
-                <em className="font-italic text-highlight">
-                  {"l'influence ?"}
-                </em>
+                <em className="font-italic">{"l'influence ?"}</em>
               </h2>
               <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
                 <p>
@@ -41,11 +42,11 @@ export default function Home() {
                 </p>
                 <p>
                   {"En seulement 11 mois, nous avons recensé "}
-                  <strong>{"40 partenariats"}</strong>
+                  {"40 partenariats"}
                   {
                     " impliquant des entreprises aux pratiques douteuses, touchant plus de "
                   }
-                  <strong>{"4,5 millions"}</strong>
+                  {"4,5 millions"}
                   {" de vues cumulées."}
                 </p>
                 <p>
@@ -63,7 +64,7 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/report-collaboration"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-highlight hover:bg-highlight/5"
+                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight text-highlight hover:bg-highlight/5"
                 >
                   Signaler une collaboration
                 </Link>
@@ -114,34 +115,31 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {["Léna Situations x Amazon", "collab2", "collab3"].map(
-                (title) => (
-                  <div key={title} className="flex flex-col gap-3">
-                    <div className="aspect-video rounded-2xl bg-white/10 flex items-center justify-center">
-                      <svg
-                        className="h-12 w-12 text-white/30"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <rect
-                          x="3"
-                          y="3"
-                          width="18"
-                          height="18"
-                          rx="2"
-                          strokeWidth="1.5"
-                        />
-                        <circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" />
-                        <path strokeWidth="1.5" d="M21 15l-5-5L5 21" />
-                      </svg>
-                    </div>
-                    <p className="font-bold text-white">{title}</p>
-                  </div>
-                ),
-              )}
+              {[
+                {
+                  metric: "78%",
+                  text: "des 18-25 ans se disent influencés par Instagram",
+                },
+                {
+                  metric: "xx%",
+                  text: "bla bla",
+                },
+                {
+                  metric: "yy%",
+                  text: "bla bla",
+                },
+              ].map((infosToBeDisplayed, index) => (
+                <div key={index} className="flex flex-col gap-6">
+                  <p className="text-center text-white font-black text-6xl md:text-7xl leading-none">
+                    <Highlight bgClassName="bg-highlight-marker-hero">
+                      {infosToBeDisplayed.metric}
+                    </Highlight>
+                  </p>
+                  <p className="text-base text-center text-white font-bold leading-relaxed">
+                    {infosToBeDisplayed.text}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </Container>
@@ -192,7 +190,7 @@ export default function Home() {
 
             <Link
               href="/key-metrics"
-              className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-highlight hover:bg-highlight/5"
+              className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
             >
               Voir tous les chiffres
             </Link>
@@ -209,8 +207,10 @@ export default function Home() {
             <div className="flex flex-col gap-4 max-w-2xl">
               <h2 className="text-white font-bold leading-tight text-3xl md:text-4xl">
                 {"Ne nous laissons pas "}
-                <em className="font-italic text-highlight">{"influencer "}</em>
-                {"à n'importe quel prix."}
+                <Highlight bgClassName="bg-highlight-marker-hero">
+                  {"influencer "}
+                </Highlight>
+                {" à n'importe quel prix."}
               </h2>
             </div>
 
