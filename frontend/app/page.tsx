@@ -64,7 +64,7 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/report-collaboration"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight text-highlight hover:bg-highlight/5"
+                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
                 >
                   Signaler une collaboration
                 </Link>
