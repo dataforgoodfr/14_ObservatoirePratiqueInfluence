@@ -77,8 +77,9 @@
   --background-secondary-ocean: oklch(0.33 0.059 241);
   --background-secondary-horizon: oklch(0.39 0.072 240);
   --background-impact: oklch(0.96 0.012 244);
-  --highlight: oklch(67.97% 0.151 41.4);
-  --highlight-secondary: oklch(76.54% 0.139 28.4);
+  --highlight: oklch(0.659 0.14 45.78);
+  --highlight-secondary: oklch(0.752 0.115 51.99);
+  --highlight-tertiary: oklch(0.463 0.117 44.39);
   --highlight-marker: oklch(0.93 0.035 85);
   --highlight-marker-hero: oklch(0.91 0.03 145);
   --highlight-marker-foreground: oklch(0.145 0 0);

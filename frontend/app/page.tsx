@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   return (
@@ -64,7 +66,7 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/report-collaboration"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
+                  className={cn(buttonVariants({ variant: "highlight", size: "pill" }))}
                 >
                   Signaler une collaboration
                 </Link>
@@ -190,7 +192,7 @@ export default function Home() {
 
             <Link
               href="/key-metrics"
-              className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
+              className={cn(buttonVariants({ variant: "highlight", size: "pill" }))}
             >
               Voir tous les chiffres
             </Link>

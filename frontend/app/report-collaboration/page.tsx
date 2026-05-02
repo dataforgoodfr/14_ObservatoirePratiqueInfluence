@@ -2,11 +2,13 @@ import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
 import { ImagePlaceholder } from "../about-us/page";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 export default function ReportCollaborationPage() {
   return (
     <main className="min-h-screen font-sans bg-background">
-      <section aria-label="Hero" className="flex-1 py-15 bg-muted">
+      <section aria-label="Hero" className="py-16 background-secondary">
         <Container>
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
@@ -51,7 +53,9 @@ export default function ReportCollaborationPage() {
               <div className="flex flex-wrap gap-3 mt-2">
                 <Link
                   href="#"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
+                  className={cn(
+                    buttonVariants({ variant: "highlight", size: "pill" }),
+                  )}
                 >
                   {"Nous contacter"}
                 </Link>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 // TO BE REMOVED
 export function ImagePlaceholder() {
@@ -25,7 +27,7 @@ export function ImagePlaceholder() {
 export default function AboutUsPage() {
   return (
     <main className="min-h-screen font-sans bg-background">
-      <section aria-label="Hero" className="flex-1 py-15 bg-muted">
+      <section aria-label="Hero" className="py-16 background-secondary">
         <Container>
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
@@ -63,7 +65,9 @@ export default function AboutUsPage() {
               <div className="flex flex-wrap gap-3 mt-2">
                 <Link
                   href="#"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
+                  className={cn(
+                    buttonVariants({ variant: "highlight", size: "pill" }),
+                  )}
                 >
                   {"Suivre notre compte Instagram"}
                 </Link>
@@ -75,7 +79,7 @@ export default function AboutUsPage() {
         </Container>
       </section>
 
-      <section aria-label="Data for Good" className="py-15">
+      <section aria-label="Data for Good" className="py-15 bg-muted">
         <Container>
           <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center">
             <ImagePlaceholder />
@@ -99,7 +103,9 @@ export default function AboutUsPage() {
               <div className="flex flex-wrap gap-3 mt-2">
                 <Link
                   href="#"
-                  className="rounded-full border border-highlight px-6 py-3 text-sm font-medium text-white bg-highlight hover:bg-highlight/5"
+                  className={cn(
+                    buttonVariants({ variant: "highlight", size: "pill" }),
+                  )}
                 >
                   {"En savoir plus"}
                 </Link>

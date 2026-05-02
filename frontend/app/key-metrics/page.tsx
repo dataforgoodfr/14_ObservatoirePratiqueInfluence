@@ -17,7 +17,7 @@ export default async function KeyMetricsPage() {
 
   return (
     <main className="min-h-screen font-sans bg-background">
-      <section aria-label="Hero" className="flex-1 py-15 bg-muted">
+      <section aria-label="Hero" className="py-16 background-secondary">
         <Container>
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
