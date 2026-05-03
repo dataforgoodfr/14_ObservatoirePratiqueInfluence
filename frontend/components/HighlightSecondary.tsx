@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function HighlightSecundary({
+export function HighlightSecondary({
   children,
   bgClassName,
   textClassName,
@@ -14,7 +14,7 @@ export function HighlightSecundary({
   return (
     <mark
       className={cn(
-        "inline-block box-decoration-clone rounded-sm px-1",
+        "inline-block box-decoration-clone rounded-sm px-1 leading-tight",
         bgClassName ?? "bg-highlight-secondary",
         textClassName ?? "text-highlight-tertiary",
         className,

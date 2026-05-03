@@ -3,7 +3,7 @@ import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
-import { HighlightSecundary } from "@/components/HighlightSecundary";
+import { HighlightSecondary } from "@/components/HighlightSecondary";
 
 export default function Home() {
   return (
@@ -45,11 +45,11 @@ export default function Home() {
                 </p>
                 <p>
                   {"En seulement 11 mois, nous avons recensé "}
-                  <HighlightSecundary>{"40 partenariats"}</HighlightSecundary>
+                  <HighlightSecondary>{"40 partenariats"}</HighlightSecondary>
                   {
                     " impliquant des entreprises aux pratiques douteuses, touchant plus de "
                   }
-                  <HighlightSecundary>{"4,5 millions"}</HighlightSecundary>
+                  <HighlightSecondary>{"4,5 millions"}</HighlightSecondary>
                   {" de vues cumulées."}
                 </p>
                 <p>
