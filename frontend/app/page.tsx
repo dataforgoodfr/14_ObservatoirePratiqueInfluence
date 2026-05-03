@@ -3,6 +3,7 @@ import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
+import { HighlightSecundary } from "@/components/HighlightSecundary";
 
 export default function Home() {
   return (
@@ -44,11 +45,11 @@ export default function Home() {
                 </p>
                 <p>
                   {"En seulement 11 mois, nous avons recensé "}
-                  {"40 partenariats"}
+                  <HighlightSecundary>{"40 partenariats"}</HighlightSecundary>
                   {
                     " impliquant des entreprises aux pratiques douteuses, touchant plus de "
                   }
-                  {"4,5 millions"}
+                  <HighlightSecundary>{"4,5 millions"}</HighlightSecundary>
                   {" de vues cumulées."}
                 </p>
                 <p>
@@ -66,7 +67,9 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/report-collaboration"
-                  className={cn(buttonVariants({ variant: "highlight", size: "pill" }))}
+                  className={cn(
+                    buttonVariants({ variant: "highlight", size: "pill" }),
+                  )}
                 >
                   Signaler une collaboration
                 </Link>
@@ -111,7 +114,11 @@ export default function Home() {
               </h2>
               <p className="text-white/80 text-base leading-relaxed max-w-2xl">
                 {
-                  "Chaque jour, des millions de personnes sont exposées à des contenus sponsorisés qui propagent des informations trompeuses, encouragent la surconsommation et banalisent des pratiques néfastes pour l'environnement et la société."
+                  "Chaque jour, des millions de personnes sont exposées à des contenus sponsorisés qui propagent des informations trompeuses, encouragent la"
+                }
+                <em className="text-highlight">{" surconsommation "}</em>
+                {
+                  "et banalisent des pratiques néfastes pour l'environnement et la société."
                 }
               </p>
             </div>
@@ -192,7 +199,9 @@ export default function Home() {
 
             <Link
               href="/key-metrics"
-              className={cn(buttonVariants({ variant: "highlight", size: "pill" }))}
+              className={cn(
+                buttonVariants({ variant: "highlight", size: "pill" }),
+              )}
             >
               Voir tous les chiffres
             </Link>

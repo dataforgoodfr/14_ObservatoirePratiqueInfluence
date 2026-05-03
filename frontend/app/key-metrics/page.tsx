@@ -34,7 +34,7 @@ export default async function KeyMetricsPage() {
 
               <p className="text-white text-center font-light mb-10">
                 {"Réveillons le monde de l'influence sur les questions "}
-                {"climatiques et sociales"}
+                <em className="text-highlight">{"climatiques et sociales"}</em>
                 {" en analysant les pratiques d'influence en France."}
               </p>
             </div>

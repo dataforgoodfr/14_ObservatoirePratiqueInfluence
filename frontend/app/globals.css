@@ -39,6 +39,7 @@
   --color-card: var(--card);
   --color-highlight: var(--highlight);
   --color-highlight-secondary: var(--highlight-secondary);
+  --color-highlight-tertiary: var(--highlight-tertiary);
   --color-highlight-marker: var(--highlight-marker);
   --color-highlight-marker-hero: var(--highlight-marker-hero);
   --color-highlight-marker-foreground: var(--highlight-marker-foreground);
@@ -78,7 +79,7 @@
   --background-secondary-horizon: oklch(0.39 0.072 240);
   --background-impact: oklch(0.96 0.012 244);
   --highlight: oklch(0.659 0.14 45.78);
-  --highlight-secondary: oklch(0.752 0.115 51.99);
+  --highlight-secondary: oklch(0.921 0.03 63.59);
   --highlight-tertiary: oklch(0.463 0.117 44.39);
   --highlight-marker: oklch(0.93 0.035 85);
   --highlight-marker-hero: oklch(0.91 0.03 145);
