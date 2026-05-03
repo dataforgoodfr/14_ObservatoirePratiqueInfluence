@@ -21,7 +21,6 @@ export function MetabaseEmbed({
       src={embedUrl}
       title={title}
       className={cn("w-full rounded-lg border border-border", className)}
-      style={{ height: "80vh" }}
     />
   );
 }

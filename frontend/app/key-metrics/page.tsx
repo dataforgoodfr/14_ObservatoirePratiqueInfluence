@@ -41,7 +41,11 @@ export default async function KeyMetricsPage() {
           </div>
         </Container>
       </section>
-      <MetabaseEmbed embedUrl={embedUrl} title="Quelques chiffres" />
+      <MetabaseEmbed
+        embedUrl={embedUrl}
+        title="Quelques chiffres"
+        className="h-[var(--metabase-embed-height-hack-avoiding-double-scroll)]"
+      />
     </main>
   );
 }
