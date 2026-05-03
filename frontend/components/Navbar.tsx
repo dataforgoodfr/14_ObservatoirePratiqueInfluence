@@ -5,12 +5,14 @@ import Link from "next/link";
 import { CircleHelp, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Container } from "./Container";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="w-full border-b border-border bg-background">
+    <header className="w-full border-b border-border bg-background fixed top-0 z-99">
       <Container>
         <nav className="flex h-16 items-center">
           <Link
@@ -25,13 +27,14 @@ export function Navbar() {
               height={100}
               className="h-16 object-contain"
             />
+            <div className="flex flex-col leading-none">
+              <span className="text-xs text-foreground uppercase italic">
+                {"Paye ton "}
+                {"influence"}
+                {/* <em className="font-black italic text-highlight">influence</em> */}
+              </span>
+            </div>
           </Link>
-          <div className="flex flex-col leading-none">
-            <span className="text-xs text-foreground uppercase italic">
-              {"Paye ton "}
-              <em className="font-black italic text-highlight">influence</em>
-            </span>
-          </div>
 
           {/* Desktop nav */}
           <div className="ml-auto hidden items-center gap-10 md:flex">
@@ -49,7 +52,9 @@ export function Navbar() {
             </Link>
             <Link
               href="/report-collaboration"
-              className="rounded-full bg-highlight font--bold px-5 py-2 text-foreground text-base hover:bg-highlight/75"
+              className={cn(
+                buttonVariants({ variant: "highlight", size: "pill" }),
+              )}
             >
               Signaler une collaboration
             </Link>
