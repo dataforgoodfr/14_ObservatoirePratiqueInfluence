@@ -81,9 +81,7 @@ export default function AboutUsPage() {
 
       <section aria-label="Data for Good" className="py-15 bg-muted">
         <Container>
-          <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center">
-            <ImagePlaceholder />
-
+          <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center">
             <div className="flex flex-col gap-6 w-full lg:w-1/2">
               <h2 className="text-foreground font-bold leading-tight text-3xl md:text-4xl">
                 {"Data for Good"}
@@ -111,6 +109,8 @@ export default function AboutUsPage() {
                 </Link>
               </div>
             </div>
+
+            <ImagePlaceholder />
           </div>
         </Container>
       </section>

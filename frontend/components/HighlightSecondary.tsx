@@ -15,8 +15,8 @@ export function HighlightSecondary({
     <mark
       className={cn(
         "inline-block box-decoration-clone rounded-sm px-1 leading-tight",
-        bgClassName ?? "bg-highlight-secondary",
-        textClassName ?? "text-highlight-tertiary",
+        bgClassName ?? "bg-highlight-marker-hero",
+        textClassName ?? "text-base",
         className,
       )}
     >
