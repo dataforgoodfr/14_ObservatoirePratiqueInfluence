@@ -10,7 +10,7 @@ export function Footer() {
           <div className="flex flex-col items-start gap-8 md:flex-row md:items-start md:justify-between md:gap-6">
             <p className="text-sm text-muted-foreground">Un projet de :</p>
 
-            <div className="flex flex-col gap-8 sm:flex-row sm:gap-10 md:gap-16">
+            <div className="flex flex-row gap-8 sm:flex-row sm:gap-10 md:gap-16">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <Image
