@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
@@ -53,12 +54,7 @@ export default function AboutUsPage() {
               <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
                 <p>
                   {
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim"
-                  }
-                </p>
-                <p>
-                  {
-                    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate"
+                    "Paye ton influence est une association lanceuse d'alerte sur l'impact socio-environnemental du secteur de l'influence. À travers de la veille et du plaidoyer auprès des acteurs du secteur et des pouvoirs publics, nous œuvrons à responsabiliser l'influence sur les questions éthiques et écologiques, tout en travallons sur une meilleure régulation du secteur."
                   }
                 </p>
               </div>
@@ -74,7 +70,15 @@ export default function AboutUsPage() {
               </div>
             </div>
 
-            <ImagePlaceholder />
+            <div className="relative w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden">
+              <Image
+                src="/aboutUs-pti.png"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
           </div>
         </Container>
       </section>
@@ -89,12 +93,12 @@ export default function AboutUsPage() {
               <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
                 <p>
                   {
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim"
+                    "Data For Good est une communauté de plus de 8000 bénévoles de la tech qui mettent leur temps et leurs compétences au service de l’intérêt général."
                   }
                 </p>
                 <p>
                   {
-                    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate"
+                    "Nous aidons des associations de terrain qui luttent pour défendre la démocratie, la justice sociale et l'environnement, à développer les outils numériques dont elles ont besoin, tout en développant un plaidoyer techno-critique sur l’usage responsable des technologies, de l'IA et de ses infrastructures."
                   }
                 </p>
               </div>
@@ -110,7 +114,94 @@ export default function AboutUsPage() {
               </div>
             </div>
 
-            <ImagePlaceholder />
+            <div className="relative w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden">
+              <Image
+                src="/aboutUs-d4g.jpeg"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section
+        aria-label="À propos de l’observatoire de l’influence responsable"
+        className="py-15"
+      >
+        <Container>
+          <div className="flex flex-col gap-6 w-full">
+            <h2 className="text-center text-foreground font-bold leading-tight text-3xl md:text-4xl">
+              {"À propos de l’observatoire de l’influence responsable"}
+            </h2>
+            <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
+              <p>
+                {
+                  "Fast fashion. Malbouffe. Industries polluantes ou jalonnées de scandales. On les voit partout sur les réseaux sociaux et notamment dans les collaborations des influenceurs."
+                }
+              </p>
+              <p>
+                {
+                  "Ces secteurs qui peuvent vous vendre des produits nocifs pour votre santé ou pour l'environnement, vous ciblent quotidiennement. Et en face, les créateurs de contenus se renseignent trop peu sur les impacts de ces produits et industries."
+                }
+              </p>
+              <p>
+                {
+                  "Mais concrètement, quels secteurs dominent les partenariats des plus gros créateurs ? Quelles marques reviennent le plus dans les collabs ? Et in fine, quel impact sur nos habitudes de consommation, sur nos imaginaires ?"
+                }
+              </p>
+              <p>
+                {
+                  "Pour répondre à ces questions, Paye ton influence a travaillé avec Data For Good pour créer l'Observatoire des pratiques de l'influence. Un outil pour analyser concrètement ce qui se passe sur les réseaux sociaux et ce que nous vendent les créateurs."
+                }
+              </p>
+              <p>
+                {
+                  "La plateforme s'appuie sur un panel de plus de 1 000 créateurs parmi les plus suivis sur TikTok, Instagram et YouTube, dont l'audience est majoritairement âgée de 15 à 35 ans et localisée en France à au moins 20 %. Les données ont été extraites sur l'année 2025 (du 1er janvier au 31 décembre)."
+                }
+              </p>
+              <p>
+                {
+                  "Elle permet de visualiser, à grande échelle, les collaborations commerciales sur TikTok, Instagram et YouTube sur la période 2024-2025."
+                }
+              </p>
+              <ul className="list-disc pl-6 flex flex-col gap-2">
+                <li>
+                  {"Vous pouvez voir les marques les plus présentes, par secteur"}
+                </li>
+                <li>{"Identifier si certaines marques sont dominantes"}</li>
+                <li>
+                  {
+                    "Visualiser le nombre moyen de collaborations par créateur et par réseau social pour l'année 2025"
+                  }
+                </li>
+              </ul>
+              <p>
+                {
+                  "L'observatoire permet aussi de zoomer sur les secteurs les plus polluants :"
+                }
+              </p>
+              <ul className="list-disc pl-6 flex flex-col gap-2">
+                <li>{"Fast fashion, énergies fossiles"}</li>
+                <li>{"Combien de collaborations représentent-ils ?"}</li>
+                <li>{"Quelle part occupent-ils dans le total ?"}</li>
+                <li>{"Combien de personnes sont exposées à ces contenus"}</li>
+              </ul>
+              <p>
+                {"Vous pouvez aussi contribuer en envoyant via notre page "}
+                <Link
+                  href="/report-collaboration"
+                  className="underline"
+                >
+                  {"Signaler une collaboration"}
+                </Link>
+                {
+                  ", les collaborations des créateurs de contenu qui vous semblent peu compatibles avec les enjeux sociaux et environnementaux."
+                }
+              </p>
+            </div>
           </div>
         </Container>
       </section>
