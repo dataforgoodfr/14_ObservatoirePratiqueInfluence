@@ -33,11 +33,10 @@ export default function AboutUsPage() {
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
               <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] text-center font-black text-muted leading-[1.1] mb-6">
-                {"Qui "}
+                {"Qui sommes "}
                 <Highlight bgClassName="bg-highlight-marker-hero">
-                  {"sommes "}
+                  {"nous ?"}
                 </Highlight>
-                {" nous ?"}
               </h1>
             </div>
           </div>
@@ -169,7 +168,9 @@ export default function AboutUsPage() {
               </p>
               <ul className="list-disc pl-6 flex flex-col gap-2">
                 <li>
-                  {"Vous pouvez voir les marques les plus présentes, par secteur"}
+                  {
+                    "Vous pouvez voir les marques les plus présentes, par secteur"
+                  }
                 </li>
                 <li>{"Identifier si certaines marques sont dominantes"}</li>
                 <li>
@@ -191,10 +192,7 @@ export default function AboutUsPage() {
               </ul>
               <p>
                 {"Vous pouvez aussi contribuer en envoyant via notre page "}
-                <Link
-                  href="/report-collaboration"
-                  className="underline"
-                >
+                <Link href="/report-collaboration" className="underline">
                   {"Signaler une collaboration"}
                 </Link>
                 {
