@@ -116,7 +116,7 @@ export default function Home() {
                 {
                   "Chaque jour, des millions de personnes sont exposées à des contenus sponsorisés qui propagent des informations trompeuses, encouragent la"
                 }
-                <em className="text-highlight">{" surconsommation "}</em>
+                {" surconsommation "}
                 {
                   "et banalisent des pratiques néfastes pour l'environnement et la société."
                 }

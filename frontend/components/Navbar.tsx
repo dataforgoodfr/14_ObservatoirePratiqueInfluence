@@ -27,11 +27,9 @@ export function Navbar() {
               height={100}
               className="h-16 object-contain"
             />
-            <div className="flex flex-col leading-none">
+            <div className="hidden flex-col leading-none sm:flex">
               <span className="text-xs text-foreground uppercase italic">
-                {"Paye ton "}
-                {"influence"}
-                {/* <em className="font-black italic text-highlight">influence</em> */}
+                {"Paye ton influence"}
               </span>
             </div>
           </Link>
