@@ -169,7 +169,7 @@ export default function AboutUsPage() {
               <ul className="list-disc pl-6 flex flex-col gap-2">
                 <li>
                   {
-                    "Vous pouvez voir les marques les plus présentes, par secteur"
+                    "Vous pouvez voir les marques les plus présentes par secteur"
                   }
                 </li>
                 <li>{"Identifier si certaines marques sont dominantes"}</li>
