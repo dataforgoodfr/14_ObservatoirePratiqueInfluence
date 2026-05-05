@@ -146,6 +146,88 @@ export default function Home() {
           </div>
         </Container>
       </section>
+
+      <section aria-label="Industries ultra-polluantes" className="py-16">
+        <Container>
+          <div className="flex flex-col gap-10 items-center text-center">
+            <div className="flex flex-col gap-4 max-w-3xl">
+              <h2 className="text-foreground font-bold leading-tight text-3xl md:text-4xl">
+                {
+                  "Des industries ultra-polluantes qui dépensent des milliers d'euros sur les réseaux"
+                }
+              </h2>
+              {/* <p className="text-foreground/70 text-base leading-relaxed max-w-2xl">
+                lorem ...
+              </p> */}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-16 gap-y-8 w-full max-w-2xl">
+              {[
+                "Fast Food",
+                "Fast Fashion",
+                "Fast Travel",
+                "Fast Food",
+                "Fast Fashion",
+                "Fast Travel",
+              ].map((label, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <svg
+                    className="h-8 w-8 shrink-0 text-foreground"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                  </svg>
+                  <span className="font-bold text-foreground">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              href="/key-metrics"
+              className={cn(
+                buttonVariants({ variant: "highlight", size: "pill" }),
+              )}
+            >
+              Voir tous les chiffres
+            </Link>
+          </div>
+        </Container>
+      </section>
+
+      <section
+        aria-label="Ne nous laissons pas influencer"
+        className="py-16 background-secondary"
+      >
+        <Container>
+          <div className="flex flex-col gap-8 items-center text-center">
+            <div className="flex flex-col gap-4 max-w-2xl">
+              <h2 className="text-white font-bold leading-tight text-3xl md:text-4xl">
+                {"Ne nous laissons pas "}
+                <Highlight bgClassName="bg-highlight-marker-hero">
+                  {"influencer "}
+                </Highlight>
+                {" à n'importe quel prix."}
+              </h2>
+            </div>
+
+            <Link
+              href="/report-collaboration"
+              className="rounded-full border border-white px-8 py-3 text-sm font-medium text-white hover:bg-white/10"
+            >
+              {"J'agis"}
+            </Link>
+          </div>
+        </Container>
+      </section>
     </main>
   );
 }
