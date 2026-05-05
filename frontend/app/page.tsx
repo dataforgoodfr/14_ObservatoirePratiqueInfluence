@@ -128,7 +128,7 @@ export default function Home() {
                 },
                 {
                   metric: "84%",
-                  text: "des 15-25 ans suivent des influenceurs",
+                  text: "des 15-25 ans suivent des influenceurs.",
                 },
               ].map((infosToBeDisplayed, index) => (
                 <div key={index} className="flex flex-col gap-6">
