@@ -1,9 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
-import { HighlightSecondary } from "@/components/HighlightSecondary";
 
 export default function Home() {
   return (
@@ -20,9 +20,9 @@ export default function Home() {
               </h1>
 
               <p className="text-white text-center font-light mb-10">
-                {"Réveillons le monde de l'influence sur les questions "}
-                {"climatiques et sociales"}
-                {" en analysant les pratiques d'influence en France."}
+                {
+                  "Réveillons le monde de l'influence sur les questions environnementales et sociales en analysant les pratiques d'influence en France"
+                }
               </p>
             </div>
           </div>
@@ -40,21 +40,27 @@ export default function Home() {
               <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
                 <p>
                   {
-                    "Les collaborations entre influenceurs et entreprises controversées ont connu une croissance sans précédent en 2024."
+                    "Les collaborations entre influenceurs et entreprises progressent, + 13,1% de croissance des investissements en marketing d'influence en 2025."
                   }
                 </p>
                 <p>
-                  {"En seulement 11 mois, nous avons recensé "}
-                  <HighlightSecondary>{"40 partenariats"}</HighlightSecondary>
                   {
-                    " impliquant des entreprises aux pratiques douteuses, touchant plus de "
+                    "Avec elle, les partenariats avec des entreprises controversées aux impacts sociétaux et environnementaux importants."
                   }
-                  <HighlightSecondary>{"4,5 millions"}</HighlightSecondary>
-                  {" de vues cumulées."}
                 </p>
                 <p>
                   {
                     "Cette tendance alarmante soulève des questions sur la responsabilité des créateurs de contenu et l'impact de ces promotions sur leurs audiences, souvent jeunes et influençables."
+                  }
+                </p>
+                <p>
+                  {
+                    "Mais concrètement, quels secteurs dominent les partenariats des plus gros créateurs ? Quelles marques reviennent le plus dans les collabs ? Et in fine, quel impact sur nos habitudes de consommation, sur nos imaginaires ?"
+                  }
+                </p>
+                <p>
+                  {
+                    "C’est ce à quoi tente de répondre l’Observatoire des pratiques de l’influence."
                   }
                 </p>
               </div>
@@ -76,27 +82,14 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Placeholder image */}
-            <div className="w-full lg:w-1/2 aspect-video rounded-2xl bg-muted flex items-center justify-center">
-              <svg
-                className="h-16 w-16 text-muted-foreground/40"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <rect
-                  x="3"
-                  y="3"
-                  width="18"
-                  height="18"
-                  rx="2"
-                  strokeWidth="1.5"
-                />
-                <circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" />
-                <path strokeWidth="1.5" d="M21 15l-5-5L5 21" />
-              </svg>
+            <div className="relative w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden">
+              <Image
+                src="/homePage.jpg"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
             </div>
           </div>
         </Container>
@@ -126,16 +119,16 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 {
-                  metric: "78%",
-                  text: "des 18-25 ans se disent influencés par Instagram",
+                  metric: "61%",
+                  text: "des Français estiment que les influenceurs ont un impact direct sur leurs goûts et leurs modes de consommation.",
                 },
                 {
-                  metric: "xx%",
-                  text: "bla bla",
+                  metric: "85%",
+                  text: "des personnes exposées à un partenariat entre une marque et un influenceur ont envisagé un achat.",
                 },
                 {
-                  metric: "yy%",
-                  text: "bla bla",
+                  metric: "84%",
+                  text: "des 15-25 ans suivent des influenceurs.",
                 },
               ].map((infosToBeDisplayed, index) => (
                 <div key={index} className="flex flex-col gap-6">
@@ -150,87 +143,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
-        </Container>
-      </section>
-      <section aria-label="Industries ultra-polluantes" className="py-16">
-        <Container>
-          <div className="flex flex-col gap-10 items-center text-center">
-            <div className="flex flex-col gap-4 max-w-3xl">
-              <h2 className="text-foreground font-bold leading-tight text-3xl md:text-4xl">
-                {
-                  "Des industries ultra-polluantes qui dépensent des milliers d'euros sur les réseaux"
-                }
-              </h2>
-              {/* <p className="text-foreground/70 text-base leading-relaxed max-w-2xl">
-                lorem ...
-              </p> */}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-16 gap-y-8 w-full max-w-2xl">
-              {[
-                "Fast Food",
-                "Fast Fashion",
-                "Fast Travel",
-                "Fast Food",
-                "Fast Fashion",
-                "Fast Travel",
-              ].map((label, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <svg
-                    className="h-8 w-8 shrink-0 text-foreground"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                    <line x1="12" y1="22.08" x2="12" y2="12" />
-                  </svg>
-                  <span className="font-bold text-foreground">{label}</span>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              href="/key-metrics"
-              className={cn(
-                buttonVariants({ variant: "highlight", size: "pill" }),
-              )}
-            >
-              Voir tous les chiffres
-            </Link>
-          </div>
-        </Container>
-      </section>
-
-      <section
-        aria-label="Ne nous laissons pas influencer"
-        className="py-16 background-secondary"
-      >
-        <Container>
-          <div className="flex flex-col gap-8 items-center text-center">
-            <div className="flex flex-col gap-4 max-w-2xl">
-              <h2 className="text-white font-bold leading-tight text-3xl md:text-4xl">
-                {"Ne nous laissons pas "}
-                <Highlight bgClassName="bg-highlight-marker-hero">
-                  {"influencer "}
-                </Highlight>
-                {" à n'importe quel prix."}
-              </h2>
-            </div>
-
-            <Link
-              href="/report-collaboration"
-              className="rounded-full border border-white px-8 py-3 text-sm font-medium text-white hover:bg-white/10"
-            >
-              {"J'agis"}
-            </Link>
           </div>
         </Container>
       </section>
