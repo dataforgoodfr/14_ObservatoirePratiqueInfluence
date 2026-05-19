@@ -184,7 +184,6 @@ def create_tiktok_extractor(
     elif settings.implementation == "SB":
         return TiktokExtractorSB(
             cache_folder=path.join(cache_folder, "tiktok"),
-            cache_ttl_seconds=cache_ttl_seconds,
         )
     else:
         raise Exception("Unexpected settings.implementation:" + settings.implementation)
