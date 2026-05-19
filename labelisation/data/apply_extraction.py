@@ -56,10 +56,10 @@ def process_dataset(input_csv: str, output_csv: str, social_network: str):
     detected_count = 0
 
     try:
-        with open(input_csv, "r", encoding="utf-8-sig") as f_in, open(
-            output_csv, "w", encoding="utf-8", newline=""
-        ) as f_out:
-
+        with (
+            open(input_csv, "r", encoding="utf-8-sig") as f_in,
+            open(output_csv, "w", encoding="utf-8", newline="") as f_out,
+        ):
             reader = csv.DictReader(f_in)
             writer = csv.DictWriter(f_out, fieldnames=output_fields)
             writer.writeheader()
