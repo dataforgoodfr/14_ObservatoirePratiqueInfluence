@@ -9,6 +9,7 @@ class PostDetails(BaseModel):
     post_id: str
     account_id: str
     post_extraction_date: Optional[AwareDatetime]
+    published_at: Optional[AwareDatetime]
     post_url: Optional[str]
     title: Optional[str]
     description: Optional[str]

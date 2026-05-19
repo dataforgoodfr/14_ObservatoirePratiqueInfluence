@@ -29,6 +29,7 @@ async def upsert_posts(posts: list[Post], api_key: str = API_KEY) -> Response:
                 "Social Network": post.social_network,
                 "Post Id": post.post_id,
                 "Post Url": post.post_url,
+                "Published At": post.published_at.isoformat(),
                 "Title": post.title,
                 "Description": post.description,
                 "Comment Count": post.comment_count,

@@ -17,18 +17,18 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictInt
-from typing import Any, ClassVar, Dict, List
+from pydantic import BaseModel, ConfigDict, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class RecycleFailedTasksResponse(BaseModel):
+class MarkTaskFailedPayload(BaseModel):
     """
-    Response model for recycle failed tasks endpoint.
+    Payload for MarkFailed endpoint.
     """ # noqa: E501
-    recycled_count: StrictInt
-    __properties: ClassVar[List[str]] = ["recycled_count"]
+    error: Optional[StrictStr]
+    __properties: ClassVar[List[str]] = ["error"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -48,7 +48,7 @@ class RecycleFailedTasksResponse(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of RecycleFailedTasksResponse from a JSON string"""
+        """Create an instance of MarkTaskFailedPayload from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -69,11 +69,16 @@ class RecycleFailedTasksResponse(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # set to None if error (nullable) is None
+        # and model_fields_set contains the field
+        if self.error is None and "error" in self.model_fields_set:
+            _dict['error'] = None
+
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of RecycleFailedTasksResponse from a dict"""
+        """Create an instance of MarkTaskFailedPayload from a dict"""
         if obj is None:
             return None
 
@@ -81,7 +86,7 @@ class RecycleFailedTasksResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "recycled_count": obj.get("recycled_count")
+            "error": obj.get("error")
         })
         return _obj
 

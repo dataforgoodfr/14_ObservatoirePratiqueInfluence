@@ -26,7 +26,7 @@ from api_client.models.extraction_task_type import ExtractionTaskType
 from api_client.models.http_validation_error import HTTPValidationError
 from api_client.models.influencer import Influencer
 from api_client.models.location_inner import LocationInner
-from api_client.models.mark_failed_payload import MarkFailedPayload
+from api_client.models.mark_task_failed_payload import MarkTaskFailedPayload
 from api_client.models.post import Post
 from api_client.models.recycle_expired_tasks_response import RecycleExpiredTasksResponse
 from api_client.models.recycle_failed_tasks_response import RecycleFailedTasksResponse

@@ -68,6 +68,7 @@ def post_table_config(
             "Post Id": CsvValueFieldMapping("post_id"),
             # "PostExtractionDate": CsvValueFieldMapping("post_extraction_date"),
             "Post Url": CsvValueFieldMapping("post_url"),
+            "Published At": CsvValueFieldMapping("published_at"),
             "Title": CsvValueFieldMapping("title"),
             "Description": CsvValueFieldMapping("description"),
             "Comment Count": CsvValueFieldMapping("comment_count"),

@@ -40,6 +40,7 @@ class InstagramExtractor(DataExtractor):
         return PostDetailsExtractionResult(
             post_id=post.shortcode,
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
+            published_at=post.date_utc.replace(tzinfo = datetime.timezone.utc),
             post_url=f"instagram.com/p/{post.shortcode}/",
             title=post.title if post.title else "No title",
             description=post.caption if post.caption is not None else "",

@@ -45,6 +45,9 @@ class Post(pydantic.BaseModel):
     post_extracted_at: Annotated[
         pydantic.AwareDatetime, pydantic.PlainSerializer(lambda d: d.isoformat())
     ]
+    published_at: Annotated[
+        pydantic.AwareDatetime, pydantic.PlainSerializer(lambda d: d.isoformat())
+    ]
     social_network: str
     account_id: str
     post_id: str

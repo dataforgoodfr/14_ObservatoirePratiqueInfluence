@@ -133,6 +133,7 @@ class LocalExtractionTaskService(ExtractionTaskService):
                 social_network=social_network,
                 account_id=account_id,
                 post_id=post.post_id,
+                published_at=post.published_at,
                 post_extraction_date=post.data_extraction_date,
                 post_url=post.post_url,
                 title=post.title,

@@ -204,6 +204,9 @@ class TiktokExtractorTTA(DataExtractor):
         videos_statsV2 = video_data.get("statsV2", {})
         return PostDetailsExtractionResult(
             post_id=video_id,
+            published_at=datetime.datetime.fromtimestamp(
+                int(video_data["createTime"]), datetime.timezone.utc
+            ),
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=video_url,
             title=video_data.get("desc", ""),
