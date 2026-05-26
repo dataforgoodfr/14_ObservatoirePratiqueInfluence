@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "clean": "rm -rf ./.next",
-    "generate::type": "bash scripts/generateTypes.sh"
+    "clean": "rm -rf ./.next"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

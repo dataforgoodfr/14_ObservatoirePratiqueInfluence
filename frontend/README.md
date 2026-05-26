@@ -8,7 +8,6 @@ Paradigme choisis :
 
 - Utilisation de l'App router
 - Colocation pour lister les query utilisé par chaque page
-- Typing generé automatiquement via swagger-typescript-api ( https://www.npmjs.com/package/swagger-typescript-api)
 - Fichier css global + tailwind
 
 ## Architecture globale
@@ -25,22 +24,16 @@ frontend/
 │ │ ├── queries.ts # Fonctions de fetching colocalisées pour cette page
 │
 ├── lib/ # Logique partagée et utilitaires
-│ ├── nocodb.ts # Client API NocoDB (config, auth, fetch générique)
+│ ├── metabase.ts # Génération d'URLs d'embed Metabase (JWT signé)
 │ └── utils.ts # Utilitaires partagés (dont `cn` pour la fusion de classes Tailwind)
 │
 ├── components/ # Composants React réutilisables
 │ ├── ui/ # Composants shadcn/ui (générés via CLI, ne pas modifier manuellement)
 │ └── data/ # Composants écrits manuellement, hors shadcn
 │
-├── generated-types/ # Types TypeScript
-│ └── nocodb.ts # Types générés automatiquement depuis le swagger NocoDB
-│
-├── scripts/ # Scripts utilitaires hors runtime
-│ └── generateTypes.sh # générer les types depuis le swagger exposé par nocodb
-│
 ├── public/ # Assets statiques servis à la racine (accessibles via `/nom-du-fichier`)
 │
-├── .env.example # Variables d'environnement d'exemple à copier sur son .env local (URL + token NocoDB)
+├── .env.example # Variables d'environnement d'exemple à copier sur son .env local (URL + secret Metabase)
 ├── components.json # Configuration shadcn/ui (style, aliases, thème…)
 ├── next.config.ts # Configuration Next.js
 ├── tsconfig.json # Configuration TypeScript
@@ -48,26 +41,16 @@ frontend/
 
 ## Pour bien commencer en tant que developeur
 
-1: Avoir des accès NocoDB et générer un API token depuis l'admin.
-2: Toujours sur NocoDB, récupérer l'id de la base utilisée par OPI.
-3: Copier `.env.example` et le renommer en `.env.local`. Modifier les valeurs.
+1: Récupérer `METABASE_URL` et `METABASE_SECRET_KEY` auprès de l'admin Metabase OPI.
+2: Copier `.env.example` et le renommer en `.env.local`. Renseigner les valeurs.
 
-4: Générer les types TypeScript depuis le swagger NocoDB :
-
-```bash
-npm run generate::type
-```
-
-> À relancer manuellement après chaque modification du schéma NocoDB. Cette commande devra aussi être exécutée automatiquement lors du `npm run build` (CI/production).
-
-5: Lancer le serveur de développement :
+3: Lancer le serveur de développement :
 
 ```bash
 npm run dev
-
 ```
 
-6: Lire attentivement la suite pour être en accord avec les "guidelines" du projet.
+4: Lire attentivement la suite pour être en accord avec les "guidelines" du projet.
 
 ---
 

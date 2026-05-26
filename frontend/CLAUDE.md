@@ -2,7 +2,7 @@
 
 ## Projet
 
-Frontend de l'Observatoire des Pratiques d'Influence (OPI), projet Data For Good. Application Next.js 16 (App Router) connectée à une API NocoDB.
+Frontend de l'Observatoire des Pratiques d'Influence (OPI), projet Data For Good. Application Next.js 16 (App Router) avec dashboards embarqués via Metabase.
 
 ## Stack technique
 
@@ -10,7 +10,7 @@ Frontend de l'Observatoire des Pratiques d'Influence (OPI), projet Data For Good
 - **Langage** : TypeScript 5 (strict mode)
 - **Styling** : Tailwind CSS v4 + OKLCH color tokens
 - **Composants UI** : shadcn/ui (style `base-nova`, icônes `lucide-react`)
-- **Backend** : NocoDB (API REST, types auto-générés)
+- **Data viz** : Metabase (dashboards embarqués via JWT signé)
 - **Build** : output `standalone` (Docker)
 
 ## Commandes
@@ -19,7 +19,6 @@ Frontend de l'Observatoire des Pratiques d'Influence (OPI), projet Data For Good
 npm run dev              # Serveur de dev
 npm run build            # Build production
 npm run lint             # ESLint
-npm run generate::type   # Régénérer les types depuis le swagger NocoDB
 ```
 
 ## Architecture
@@ -35,9 +34,8 @@ components/
   ├── ui/                # Composants shadcn/ui (générés via CLI)
   └── ...                # Composants custom
 lib/
-  ├── nocodb.ts          # Client API NocoDB
+  ├── metabase.ts        # Génération d'URLs d'embed Metabase (JWT signé)
   └── utils.ts           # Utilitaires (cn, etc.)
-generated-types/         # Types TS auto-générés — NE PAS MODIFIER
 ```
 
 ## Conventions à respecter
@@ -54,11 +52,7 @@ generated-types/         # Types TS auto-générés — NE PAS MODIFIER
 
 ### Data fetching
 - Colocaliser les fonctions de fetch dans un fichier `queries.ts` au même niveau que la `page.tsx` de la route.
-- Le client NocoDB est dans `lib/nocodb.ts`, utiliser `nocoApi` pour les appels.
-
-### Types
-- Les types dans `generated-types/` sont auto-générés. **Ne pas les modifier manuellement.**
-- Relancer `npm run generate::type` après chaque changement de schéma NocoDB.
+- Pour intégrer un dashboard Metabase, utiliser `getMetabaseEmbedUrl()` depuis `lib/metabase.ts` (cf. `app/key-metrics/queries.ts` pour un exemple).
 
 ### Imports
 - Utiliser l'alias `@/` pour tous les imports (ex: `@/components/ui/button`, `@/lib/utils`).
