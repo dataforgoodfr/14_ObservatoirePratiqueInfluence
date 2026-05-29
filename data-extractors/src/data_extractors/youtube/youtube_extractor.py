@@ -114,6 +114,7 @@ class YoutubeExtractor(DataExtractor):
     def _video_to_post_details(self, video: Video) -> PostDetailsExtractionResult:
         return PostDetailsExtractionResult(
             post_id=video.id,
+            published_at=video.published_at,
             data_extraction_date=datetime.datetime.now(datetime.timezone.utc),
             post_url=post_url(video.id, video.post_type),
             title=video.title,
@@ -128,5 +129,5 @@ class YoutubeExtractor(DataExtractor):
             sn_has_paid_placement=video.has_paid_placement,
             sn_brand="",  # youtube does not provide brand info for product placement
             post_type="video",
-            text_content="",  # not relevant for video posts
+            text_content="",  # not relevant for video posts,
         )

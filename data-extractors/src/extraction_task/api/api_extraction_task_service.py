@@ -27,7 +27,7 @@ from extraction_task.api.mappings import (
 from api_client.models import (
     Account,
     Post as ApiPost,
-    MarkFailedPayload,
+    MarkTaskFailedPayload,
 )
 
 from extraction_task.social_network import SocialNetwork as DomainSocialNetwork
@@ -65,7 +65,7 @@ class ApiExtractionTaskService(ExtractionTaskService):
     def mark_task_failed(self, task: ExtractionTask, task_error: str) -> None:
         """Mark a task as failed."""
         self._api.mark_failed_extraction_task_task_uid_mark_failed_post(
-            task.id, mark_failed_payload=MarkFailedPayload(error=task_error)
+            task.id, mark_task_failed_payload=MarkTaskFailedPayload(error=task_error)
         )
 
     def mark_task_completed(
@@ -148,6 +148,7 @@ class ApiExtractionTaskService(ExtractionTaskService):
                 post_extracted_at=post_details.data_extraction_date,
                 social_network=social_network,
                 account_id=account_id,
+                published_at=post_details.published_at,
                 post_id=post_details.post_id,
                 post_url=post_details.post_url,
                 title=post_details.title,

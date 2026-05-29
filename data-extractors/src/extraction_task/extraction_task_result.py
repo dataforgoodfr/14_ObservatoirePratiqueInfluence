@@ -17,6 +17,7 @@ class AccountExtractionResult(BaseModel):
 
 class PostDetailsExtractionResult(BaseModel):
     data_extraction_date: AwareDatetime
+    published_at: AwareDatetime
     post_id: str
     post_url: str
     title: str

@@ -23,7 +23,7 @@ from api_client.models.extraction_task import ExtractionTask
 from api_client.models.extraction_task_response import ExtractionTaskResponse
 from api_client.models.extraction_task_stats_response import ExtractionTaskStatsResponse
 from api_client.models.influencer import Influencer
-from api_client.models.mark_failed_payload import MarkFailedPayload
+from api_client.models.mark_task_failed_payload import MarkTaskFailedPayload
 from api_client.models.post import Post
 from api_client.models.recycle_expired_tasks_response import RecycleExpiredTasksResponse
 from api_client.models.recycle_failed_tasks_response import RecycleFailedTasksResponse
@@ -1143,7 +1143,7 @@ class DefaultApi:
     def mark_failed_extraction_task_task_uid_mark_failed_post(
         self,
         task_uid: UUID,
-        mark_failed_payload: MarkFailedPayload,
+        mark_task_failed_payload: MarkTaskFailedPayload,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1163,8 +1163,8 @@ class DefaultApi:
 
         :param task_uid: (required)
         :type task_uid: UUID
-        :param mark_failed_payload: (required)
-        :type mark_failed_payload: MarkFailedPayload
+        :param mark_task_failed_payload: (required)
+        :type mark_task_failed_payload: MarkTaskFailedPayload
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1189,7 +1189,7 @@ class DefaultApi:
 
         _param = self._mark_failed_extraction_task_task_uid_mark_failed_post_serialize(
             task_uid=task_uid,
-            mark_failed_payload=mark_failed_payload,
+            mark_task_failed_payload=mark_task_failed_payload,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1215,7 +1215,7 @@ class DefaultApi:
     def mark_failed_extraction_task_task_uid_mark_failed_post_with_http_info(
         self,
         task_uid: UUID,
-        mark_failed_payload: MarkFailedPayload,
+        mark_task_failed_payload: MarkTaskFailedPayload,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1235,8 +1235,8 @@ class DefaultApi:
 
         :param task_uid: (required)
         :type task_uid: UUID
-        :param mark_failed_payload: (required)
-        :type mark_failed_payload: MarkFailedPayload
+        :param mark_task_failed_payload: (required)
+        :type mark_task_failed_payload: MarkTaskFailedPayload
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1261,7 +1261,7 @@ class DefaultApi:
 
         _param = self._mark_failed_extraction_task_task_uid_mark_failed_post_serialize(
             task_uid=task_uid,
-            mark_failed_payload=mark_failed_payload,
+            mark_task_failed_payload=mark_task_failed_payload,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1287,7 +1287,7 @@ class DefaultApi:
     def mark_failed_extraction_task_task_uid_mark_failed_post_without_preload_content(
         self,
         task_uid: UUID,
-        mark_failed_payload: MarkFailedPayload,
+        mark_task_failed_payload: MarkTaskFailedPayload,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1307,8 +1307,8 @@ class DefaultApi:
 
         :param task_uid: (required)
         :type task_uid: UUID
-        :param mark_failed_payload: (required)
-        :type mark_failed_payload: MarkFailedPayload
+        :param mark_task_failed_payload: (required)
+        :type mark_task_failed_payload: MarkTaskFailedPayload
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1333,7 +1333,7 @@ class DefaultApi:
 
         _param = self._mark_failed_extraction_task_task_uid_mark_failed_post_serialize(
             task_uid=task_uid,
-            mark_failed_payload=mark_failed_payload,
+            mark_task_failed_payload=mark_task_failed_payload,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1354,7 +1354,7 @@ class DefaultApi:
     def _mark_failed_extraction_task_task_uid_mark_failed_post_serialize(
         self,
         task_uid,
-        mark_failed_payload,
+        mark_task_failed_payload,
         _request_auth,
         _content_type,
         _headers,
@@ -1382,8 +1382,8 @@ class DefaultApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if mark_failed_payload is not None:
-            _body_params = mark_failed_payload
+        if mark_task_failed_payload is not None:
+            _body_params = mark_task_failed_payload
 
 
         # set the HTTP header `Accept`

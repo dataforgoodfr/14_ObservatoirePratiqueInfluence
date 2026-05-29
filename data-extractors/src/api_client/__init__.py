@@ -42,7 +42,7 @@ __all__ = [
     "HTTPValidationError",
     "Influencer",
     "LocationInner",
-    "MarkFailedPayload",
+    "MarkTaskFailedPayload",
     "Post",
     "RecycleExpiredTasksResponse",
     "RecycleFailedTasksResponse",
@@ -81,7 +81,7 @@ from api_client.models.extraction_task_type import ExtractionTaskType as Extract
 from api_client.models.http_validation_error import HTTPValidationError as HTTPValidationError
 from api_client.models.influencer import Influencer as Influencer
 from api_client.models.location_inner import LocationInner as LocationInner
-from api_client.models.mark_failed_payload import MarkFailedPayload as MarkFailedPayload
+from api_client.models.mark_task_failed_payload import MarkTaskFailedPayload as MarkTaskFailedPayload
 from api_client.models.post import Post as Post
 from api_client.models.recycle_expired_tasks_response import RecycleExpiredTasksResponse as RecycleExpiredTasksResponse
 from api_client.models.recycle_failed_tasks_response import RecycleFailedTasksResponse as RecycleFailedTasksResponse

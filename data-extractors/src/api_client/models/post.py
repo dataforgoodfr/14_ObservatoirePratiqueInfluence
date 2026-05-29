@@ -22,12 +22,14 @@ from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class Post(BaseModel):
     """
     Post model.
     """ # noqa: E501
     post_extracted_at: datetime
+    published_at: datetime
     social_network: StrictStr
     account_id: StrictStr
     post_id: StrictStr
@@ -45,10 +47,11 @@ class Post(BaseModel):
     sn_brand: StrictStr
     post_type: StrictStr
     text_content: StrictStr
-    __properties: ClassVar[List[str]] = ["post_extracted_at", "social_network", "account_id", "post_id", "post_url", "title", "description", "comment_count", "view_count", "repost_count", "like_count", "share_count", "categories", "tags", "sn_has_paid_placement", "sn_brand", "post_type", "text_content"]
+    __properties: ClassVar[List[str]] = ["post_extracted_at", "published_at", "social_network", "account_id", "post_id", "post_url", "title", "description", "comment_count", "view_count", "repost_count", "like_count", "share_count", "categories", "tags", "sn_has_paid_placement", "sn_brand", "post_type", "text_content"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -60,8 +63,7 @@ class Post(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
@@ -99,6 +101,7 @@ class Post(BaseModel):
 
         _obj = cls.model_validate({
             "post_extracted_at": obj.get("post_extracted_at"),
+            "published_at": obj.get("published_at"),
             "social_network": obj.get("social_network"),
             "account_id": obj.get("account_id"),
             "post_id": obj.get("post_id"),
