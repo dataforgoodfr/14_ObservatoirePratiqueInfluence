@@ -1,14 +1,8 @@
 import fastapi
 
-from app.backend.routing.endpoints import extraction_task, influencer, social_network
+from app.backend.routing.endpoints import extraction_task, social_network
 
 router = fastapi.APIRouter()
-router.add_api_route(
-    "/influencer/{username}",
-    endpoint=influencer.get_influencer_accounts,
-    methods=["GET"],
-    description="Get social network accounts for an influencer",
-)
 router.add_api_route(
     "/extraction-task/acquire",
     endpoint=extraction_task.acquire_available_task,

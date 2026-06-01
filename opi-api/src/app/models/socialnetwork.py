@@ -14,13 +14,6 @@ class SocialNetwork(StrEnum):
     INSTAGRAM = "instagram"
 
 
-class Influencer(pydantic.BaseModel):
-    """Influencer model."""
-
-    uid: str
-    username: str
-
-
 class Account(pydantic.BaseModel):
     """Account model."""
 
