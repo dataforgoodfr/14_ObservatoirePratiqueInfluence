@@ -172,3 +172,4 @@ playground
 
 # Exclude openapi-generator file
 .openapi-generator
+noco_setup/.tmp/

@@ -1,0 +1,79 @@
+{
+  "title": "Account",
+  "fields": [
+    {
+      "title": "Social Network",
+      "type": "SingleSelect",
+      "options": {
+        "choices": [
+          { "title": "tiktok", "color": "#cfdffe", "id": "skrvs65rttjxy4k" },
+          { "title": "youtube", "color": "#d0f1fd", "id": "sxqbqsbbt716bl1" },
+          { "title": "instagram", "color": "#c2f5e8", "id": "sp4enuk9lba0drr" }
+        ]
+      }
+    },
+    {
+      "title": "Account Id",
+      "type": "SingleLineText",
+      "description": "The social network account id.\n* On Youtube the UCxxx of the account"
+    },
+    {
+      "title": "Enable Data Extraction",
+      "type": "Checkbox",
+      "default_value": "false"
+    },
+    {
+      "title": "Description",
+      "type": "LongText",
+      "options": { "rich_text": false },
+      "description": "Description of the account as found in social network platform"
+    },
+    {
+      "title": "Follower Count",
+      "type": "Number",
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Following Count",
+      "type": "Number",
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Post Count",
+      "type": "Number",
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "View Count",
+      "type": "Number",
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Like Count",
+      "type": "Number",
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Categories",
+      "type": "LongText"
+    },
+    {
+      "title": "Handle",
+      "type": "SingleLineText",
+      "system": false
+    },
+    {
+      "title": "account_extraction_date",
+      "type": "Date",
+      "options": { "date_format": "YYYY-MM-DD" }
+    },
+    {
+      "title": "Posts",
+      "type": "Links",
+      "options": {
+        "relation_type": "hm",
+        "related_table_id": "POST_TABLE_ID"
+      }
+    }
+  ]
+}
