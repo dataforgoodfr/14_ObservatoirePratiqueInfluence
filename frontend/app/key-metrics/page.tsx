@@ -21,7 +21,7 @@ export default async function KeyMetricsPage() {
         <Container>
           <div className="background-secondary rounded-3xl">
             <div className="relative block items-center px-12 pt-32 pb-16 overflow-hidden">
-              <h1 className="text-[clamp(2.8rem,5vw,4.2rem)] text-center font-black text-muted leading-[1.1] mb-6">
+              <h1 className="text-hero text-center font-black text-muted leading-[1.1] mb-6">
                 {"Les "}
                 <Highlight bgClassName="bg-highlight-marker-hero">
                   {" chiffres "}
