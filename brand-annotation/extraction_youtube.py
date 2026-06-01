@@ -1,6 +1,7 @@
 import re
 import csv
 import argparse
+from typing import Any
 import unicodedata
 from pathlib import Path
 
@@ -19,20 +20,21 @@ def resolve_brands_csv_path(cli_path: str | None, no_brands: bool) -> str | None
         return str(_DEFAULT_BRANDS_CSV)
     return None
 
+
 # ============================================
 # ALGORITHME YOUTUBE - Détection de Partenariats
 # ============================================
 
 
 # --- Regex compilées pour chaque règle ---
-RE_COLLAB_COMM    = re.compile(r'collaboration commerciale', re.I)
-RE_PUBLICITE      = re.compile(r'publicit[eéè]', re.I)
-RE_SPONSORISE     = re.compile(r'sponsoris[eéè]', re.I)
-RE_MERCI_SPONSOR  = re.compile(r"merci à\s+(.+?)\s+d'avoir\s+sponsoris", re.I)
-RE_MERCI_ACCOMP   = re.compile(r'merci à\s+(.+?)\s+de nous avoir accompagn', re.I)
-RE_PRESENTE_PAR   = re.compile(r'présenté(?:e)?\s+par', re.I)
-RE_EN_PARTENARIAT = re.compile(r'en partenariat avec', re.I)
-RE_PRODUITS_OFF   = re.compile(r'produits?\s+offerts?', re.I)
+RE_COLLAB_COMM = re.compile(r"collaboration commerciale", re.I)
+RE_PUBLICITE = re.compile(r"publicit[eéè]", re.I)
+RE_SPONSORISE = re.compile(r"sponsoris[eéè]", re.I)
+RE_MERCI_SPONSOR = re.compile(r"merci à\s+(.+?)\s+d'avoir\s+sponsoris", re.I)
+RE_MERCI_ACCOMP = re.compile(r"merci à\s+(.+?)\s+de nous avoir accompagn", re.I)
+RE_PRESENTE_PAR = re.compile(r"présenté(?:e)?\s+par", re.I)
+RE_EN_PARTENARIAT = re.compile(r"en partenariat avec", re.I)
+RE_PRODUITS_OFF = re.compile(r"produits?\s+offerts?", re.I)
 
 # --- Regex additionnelles pour extraction partenaire (niveau B) ---
 RE_MERCI_SPONSOR_EXACT = re.compile(
@@ -74,13 +76,27 @@ RE_CODE_AFTER_BRAND = re.compile(
 
 # Expressions non exploitables comme nom de partenaire
 BAD_PARTNER_TOKENS = {
-    "la video", "la vidéo", "cette video", "cette vidéo", "youtube",
-    "mon code", "votre commande", "l’ukraine", "ukraine", "la france", "france",
-    "eux", "nous", "vous", "leur", "ils", "elles",
+    "la video",
+    "la vidéo",
+    "cette video",
+    "cette vidéo",
+    "youtube",
+    "mon code",
+    "votre commande",
+    "l’ukraine",
+    "ukraine",
+    "la france",
+    "france",
+    "eux",
+    "nous",
+    "vous",
+    "leur",
+    "ils",
+    "elles",
 }
 
 
-def _as_text(value) -> str:
+def _as_text(value: Any) -> str:
     if value is None:
         return ""
     text = str(value)
@@ -94,10 +110,22 @@ def _clean_partner_candidate(value: str) -> str:
     text = re.sub(r"^(?:le|la)\s+site\s+de\s+", "", text, flags=re.I)
     text = re.sub(r"^sur\s+(?:tout\s+)?le\s+site\s+", "", text, flags=re.I)
     text = re.sub(r"^votre\s+esim\s+", "", text, flags=re.I)
-    text = re.sub(r"^(?:les?\s+offres?\s+en\s+cours|les?\s+produits?\s+en\s+promotion)\s+", "", text, flags=re.I)
+    text = re.sub(
+        r"^(?:les?\s+offres?\s+en\s+cours|les?\s+produits?\s+en\s+promotion)\s+",
+        "",
+        text,
+        flags=re.I,
+    )
     text = re.sub(r"^(?:l['’]offre|offre)\s+", "", text, flags=re.I)
-    text = re.sub(r"\s+(?:avec\s+mon\s+code|avec\s+le\s+code|profitez|b[ée]n[ée]ficiez|jusqu['’]a|jusqu['’]à|voir\s+conditions?).*$", "", text, flags=re.I)
-    text = re.sub(r"\s*[-–]\s*(?:avec\s+mon\s+code|avec\s+le\s+code).*$", "", text, flags=re.I)
+    text = re.sub(
+        r"\s+(?:avec\s+mon\s+code|avec\s+le\s+code|profitez|b[ée]n[ée]ficiez|jusqu['’]a|jusqu['’]à|voir\s+conditions?).*$",
+        "",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\s*[-–]\s*(?:avec\s+mon\s+code|avec\s+le\s+code).*$", "", text, flags=re.I
+    )
     text = text.strip(" -|,.;:!?)([]{}\"'")
     return text
 
@@ -112,7 +140,22 @@ def _valid_partner_candidate(value: str) -> bool:
         return False
     if lowered.startswith("votre commande"):
         return False
-    if any(token in lowered for token in ("http://", "https://", "%", "commande", "reduction", "réduction", "offre", "offerts", "profitez", "beneficiez", "bénéficiez")):
+    if any(
+        token in lowered
+        for token in (
+            "http://",
+            "https://",
+            "%",
+            "commande",
+            "reduction",
+            "réduction",
+            "offre",
+            "offerts",
+            "profitez",
+            "beneficiez",
+            "bénéficiez",
+        )
+    ):
         return False
     if len(value.split()) > 5:
         return False
@@ -176,7 +219,9 @@ def load_brand_catalog(csv_path: str | None) -> list[tuple[re.Pattern, str]]:
     return matchers
 
 
-def find_all_brand_hits(normalized_haystack: str, matchers: list[tuple[re.Pattern, str]]) -> list[str]:
+def find_all_brand_hits(
+    normalized_haystack: str, matchers: list[tuple[re.Pattern, str]]
+) -> list[str]:
     if not normalized_haystack or not matchers:
         return []
     found: list[str] = []
@@ -252,7 +297,9 @@ def _parse_manual_brand_ground_truth(row: dict) -> tuple[str, set[str], dict[str
     return gt_main_norm, gt_set, norm_to_display
 
 
-def _parse_predicted_brand_set(partner_final: str) -> tuple[str, set[str], dict[str, str]]:
+def _parse_predicted_brand_set(
+    partner_final: str,
+) -> tuple[str, set[str], dict[str, str]]:
     pred_main_norm = ""
     norm_to_display: dict[str, str] = {}
     pred_set: set[str] = set()
@@ -322,7 +369,9 @@ def extract_partner_level_b(description: str) -> str:
     return ""
 
 
-def detect_youtube_partnership(title: str, description: str, paid_placement: bool) -> dict:
+def detect_youtube_partnership(
+    title: str, description: str, paid_placement: bool
+) -> dict:
     """
     Détecte si une vidéo YouTube contient un partenariat commercial.
 
@@ -370,7 +419,7 @@ def detect_youtube_partnership(title: str, description: str, paid_placement: boo
         detected = True
         rules.append("MERCI_SPONSOR")
         brand = m.group(1).strip()
-        brand = re.sub(r'^la marque\s+', '', brand, flags=re.I)
+        brand = re.sub(r"^la marque\s+", "", brand, flags=re.I)
         if 1 < len(brand) < 40:
             brands.add(brand)
 
@@ -380,7 +429,7 @@ def detect_youtube_partnership(title: str, description: str, paid_placement: boo
         detected = True
         rules.append("MERCI_ACCOMPAGNE")
         brand = m.group(1).strip()
-        brand = re.sub(r'^la marque\s+', '', brand, flags=re.I)
+        brand = re.sub(r"^la marque\s+", "", brand, flags=re.I)
         if 1 < len(brand) < 40:
             brands.add(brand)
 
@@ -450,7 +499,9 @@ def compute_final_annotation(
         )
     marqueur_texte = " | ".join(marqueur_parts) if marqueur_parts else ""
 
-    pass1_names_upper = {p.strip().upper() for p in partner_pass1.split(";") if p.strip()}
+    pass1_names_upper = {
+        p.strip().upper() for p in partner_pass1.split(";") if p.strip()
+    }
     list_only_upper = {h.upper() for h in list_hits} - pass1_names_upper
 
     return {
@@ -470,7 +521,7 @@ def annotate_youtube_csv(
     input_csv_path: str,
     output_csv_path: str,
     brands_csv_path: str | None = None,
-):
+) -> None:
     """
     Annote toutes les lignes d'un CSV YouTube avec les colonnes:
     - Partenariat_Détecté
@@ -492,7 +543,12 @@ def annotate_youtube_csv(
         rows = list(reader)
         fieldnames = list(reader.fieldnames)
 
-    for col in ("Partenariat_Détecté", "Partenaire(s)", "Type_Partenariat", "Marqueur_Texte"):
+    for col in (
+        "Partenariat_Détecté",
+        "Partenaire(s)",
+        "Type_Partenariat",
+        "Marqueur_Texte",
+    ):
         if col not in fieldnames:
             fieldnames.append(col)
 
@@ -582,7 +638,9 @@ def annotate_youtube_csv(
     print("-" * 60)
     print(f"  'Oui' avec partenaire vide AVANT : {before_empty_detected}")
     print(f"  Vides corrigés après traitement   : {fixed_from_empty}")
-    print(f"  'Oui' encore vide APRÈS           : {before_empty_detected - fixed_from_empty}")
+    print(
+        f"  'Oui' encore vide APRÈS           : {before_empty_detected - fixed_from_empty}"
+    )
     print("=" * 60)
 
 
@@ -592,7 +650,7 @@ def annotate_youtube_csv(
 def evaluate_youtube(
     csv_path: str,
     brands_csv_path: str | None = None,
-):
+) -> None:
     """
     Lit le CSV exporté de la feuille 'YouTube - Vidéos' et évalue l'algorithme.
 
@@ -613,12 +671,12 @@ def evaluate_youtube(
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader, start=2):  # start=2 car ligne 1 = header
-            title       = _as_text(row.get("Title", ""))
+            title = _as_text(row.get("Title", ""))
             description = _as_text(row.get("Description", ""))
-            paid_raw    = _as_text(row.get("SN Has Paid Placement", ""))
-            paid        = paid_raw.strip().upper() in ("TRUE", "1", "VRAI")
-            gt          = row.get("Partenariat_Détecté", "").strip()
-            gt_partner  = row.get("Partenaire(s)", "")
+            paid_raw = _as_text(row.get("SN Has Paid Placement", ""))
+            paid = paid_raw.strip().upper() in ("TRUE", "1", "VRAI")
+            gt = row.get("Partenariat_Détecté", "").strip()
+            gt_partner = row.get("Partenaire(s)", "")
 
             # Ignorer les lignes non annotées
             if gt not in ("Oui", "Non"):
@@ -635,33 +693,39 @@ def evaluate_youtube(
                     TP += 1
                 else:
                     FN += 1
-                    fn_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "partner": gt_partner,
-                    })
+                    fn_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "partner": gt_partner,
+                        }
+                    )
             elif gt == "Non":
                 if predicted:
                     FP += 1
-                    fp_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "marqueur": ann["marqueur_texte"],
-                    })
+                    fp_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "marqueur": ann["marqueur_texte"],
+                        }
+                    )
                 else:
                     TN += 1
 
     total = TP + FP + FN + TN
-    recall    = TP / (TP + FN) if (TP + FN) else 0
-    fpr       = FP / (FP + TN) if (FP + TN) else 0
+    recall = TP / (TP + FN) if (TP + FN) else 0
+    fpr = FP / (FP + TN) if (FP + TN) else 0
     miss_rate = FN / (FN + TP) if (FN + TP) else 0
     precision = TP / (TP + FP) if (TP + FP) else 0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
 
     print("=" * 55)
     print("  YOUTUBE — Résultats de l'algorithme")
     print("=" * 55)
-    print(f"  Passe 2 (CSV marques) : {brands_csv_path or '(désactivé)'} — {len(brand_matchers)} marques")
+    print(
+        f"  Passe 2 (CSV marques) : {brands_csv_path or '(désactivé)'} — {len(brand_matchers)} marques"
+    )
     print(f"  Total annotées        : {total}")
     print(f"  Vrais Positifs  (TP)  : {TP}")
     print(f"  Faux Positifs   (FP)  : {FP}")
@@ -690,7 +754,7 @@ def evaluate_dash_admin_youtube(
     csv_path: str,
     brands_csv_path: str | None = None,
     debug_csv_path: str | None = None,
-):
+) -> None:
     """
     Évalue sur le CSV Dash Admin avec la vérité terrain:
         DA - Manuel Collab Brand
@@ -719,13 +783,17 @@ def evaluate_dash_admin_youtube(
         for i, row in enumerate(reader, start=2):
             title = _row_value(row, "Title")
             description = _row_value(row, "Description")
-            paid_raw = _row_value(row, "SN Has Paid Placement", "Scrappé - SN Has Paid Placement")
+            paid_raw = _row_value(
+                row, "SN Has Paid Placement", "Scrappé - SN Has Paid Placement"
+            )
             paid = paid_raw.strip().upper() in ("TRUE", "1", "VRAI")
 
             gt_da_raw = _row_value(row, "DA - Manuel Collab Brand")
             gt_detected = not _is_empty_brand_value(gt_da_raw)
             gt_main_display = _clean_partner_candidate(gt_da_raw) if gt_detected else ""
-            gt_main_norm = _normalize_partner_label(gt_main_display) if gt_detected else ""
+            gt_main_norm = (
+                _normalize_partner_label(gt_main_display) if gt_detected else ""
+            )
             gt_brand_set = {gt_main_norm} if gt_main_norm else set()
             gt_display = {gt_main_norm: gt_main_display} if gt_main_norm else {}
 
@@ -735,7 +803,9 @@ def evaluate_dash_admin_youtube(
             )
             predicted = ann["detected_final"]
             predicted_partner = ann["partner_final"].strip()
-            pred_main_norm, pred_brand_set, pred_display = _parse_predicted_brand_set(predicted_partner)
+            pred_main_norm, pred_brand_set, pred_display = _parse_predicted_brand_set(
+                predicted_partner
+            )
 
             # Multi-label brand metrics (micro aggregation)
             if gt_brand_set:
@@ -772,20 +842,24 @@ def evaluate_dash_admin_youtube(
                 else:
                     FN += 1
                     status = "FN"
-                    fn_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "partner": gt_main_display,
-                    })
+                    fn_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "partner": gt_main_display,
+                        }
+                    )
             else:
                 if predicted:
                     FP += 1
                     status = "FP"
-                    fp_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "marqueur": ann["marqueur_texte"],
-                    })
+                    fp_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "marqueur": ann["marqueur_texte"],
+                        }
+                    )
                 else:
                     TN += 1
                     status = "TN"
@@ -805,24 +879,38 @@ def evaluate_dash_admin_youtube(
                 brand_match_status = "BRAND_NONE_SET"
 
             if debug_csv_path:
-                debug_rows.append({
-                    "row_number": i,
-                    "post_url": _row_value(row, "Post Url"),
-                    "gt_da_manual_brand": gt_main_display,
-                    "gt_main_brand": _display_label(gt_main_norm, gt_display) if gt_main_norm else "",
-                    "gt_brand_set": "; ".join(sorted(_display_label(k, gt_display) for k in gt_brand_set)),
-                    "gt_detected": "Oui" if gt_detected else "Non",
-                    "pred_detected": "Oui" if predicted else "Non",
-                    "pred_main_brand": _display_label(pred_main_norm, pred_display) if pred_main_norm else "",
-                    "pred_brand_set": "; ".join(sorted(_display_label(k, pred_display) for k in pred_brand_set)),
-                    "pred_partner_raw": predicted_partner,
-                    "detect_status": status,
-                    "brand_match_status": brand_match_status,
-                    "main_brand_detected": "Oui" if (gt_main_norm and pred_main_norm == gt_main_norm) else "Non",
-                    "main_brand_status": main_status,
-                    "paid_placement_raw": paid_raw,
-                    "marqueur_texte": ann["marqueur_texte"],
-                })
+                debug_rows.append(
+                    {
+                        "row_number": i,
+                        "post_url": _row_value(row, "Post Url"),
+                        "gt_da_manual_brand": gt_main_display,
+                        "gt_main_brand": _display_label(gt_main_norm, gt_display)
+                        if gt_main_norm
+                        else "",
+                        "gt_brand_set": "; ".join(
+                            sorted(_display_label(k, gt_display) for k in gt_brand_set)
+                        ),
+                        "gt_detected": "Oui" if gt_detected else "Non",
+                        "pred_detected": "Oui" if predicted else "Non",
+                        "pred_main_brand": _display_label(pred_main_norm, pred_display)
+                        if pred_main_norm
+                        else "",
+                        "pred_brand_set": "; ".join(
+                            sorted(
+                                _display_label(k, pred_display) for k in pred_brand_set
+                            )
+                        ),
+                        "pred_partner_raw": predicted_partner,
+                        "detect_status": status,
+                        "brand_match_status": brand_match_status,
+                        "main_brand_detected": "Oui"
+                        if (gt_main_norm and pred_main_norm == gt_main_norm)
+                        else "Non",
+                        "main_brand_status": main_status,
+                        "paid_placement_raw": paid_raw,
+                        "marqueur_texte": ann["marqueur_texte"],
+                    }
+                )
 
     total = TP + FP + FN + TN
     recall = TP / (TP + FN) if (TP + FN) else 0
@@ -897,7 +985,9 @@ def evaluate_dash_admin_youtube(
             print(f"    Ligne {d['row']} | {d['title']} | Marqueur: {d['marqueur']}")
 
     if main_confusions:
-        sorted_confusions = sorted(main_confusions.items(), key=lambda x: x[1], reverse=True)
+        sorted_confusions = sorted(
+            main_confusions.items(), key=lambda x: x[1], reverse=True
+        )
         print("\n  Top confusions marque principale :")
         for (gt_norm, pred_norm), count in sorted_confusions[:10]:
             gt_name = _display_label(gt_norm, {})
@@ -932,11 +1022,17 @@ def evaluate_dash_admin_youtube(
 
 # --- Point d'entrée ---
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Outils YouTube (évaluation / annotation).")
+    parser = argparse.ArgumentParser(
+        description="Outils YouTube (évaluation / annotation)."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    p_eval = subparsers.add_parser("evaluate", help="Évaluer l'algorithme sur un CSV annoté")
-    p_eval.add_argument("--csv", default="youtube_videos.csv", help="Chemin du CSV à évaluer")
+    p_eval = subparsers.add_parser(
+        "evaluate", help="Évaluer l'algorithme sur un CSV annoté"
+    )
+    p_eval.add_argument(
+        "--csv", default="youtube_videos.csv", help="Chemin du CSV à évaluer"
+    )
     p_eval.add_argument(
         "--brands-csv",
         default=None,
@@ -952,7 +1048,9 @@ if __name__ == "__main__":
         "evaluate-da",
         help="Évaluer sur CSV Dash Admin (GT: DA - Manuel Collab Brand)",
     )
-    p_eval_dash.add_argument("--csv", default="youtube_videos.csv", help="Chemin du CSV à évaluer")
+    p_eval_dash.add_argument(
+        "--csv", default="youtube_videos.csv", help="Chemin du CSV à évaluer"
+    )
     p_eval_dash.add_argument(
         "--brands-csv",
         default=None,
@@ -969,9 +1067,13 @@ if __name__ == "__main__":
         help="Chemin d'export debug CSV (statut TP/FP/TN/FN par ligne).",
     )
 
-    p_annotate = subparsers.add_parser("annotate", help="Annoter toutes les lignes (regex + liste)")
+    p_annotate = subparsers.add_parser(
+        "annotate", help="Annoter toutes les lignes (regex + liste)"
+    )
     p_annotate.add_argument("--input", default="youtube_videos.csv", help="CSV source")
-    p_annotate.add_argument("--output", default="youtube_videos_annotated.csv", help="CSV de sortie")
+    p_annotate.add_argument(
+        "--output", default="youtube_videos_annotated.csv", help="CSV de sortie"
+    )
     p_annotate.add_argument(
         "--brands-csv",
         default=None,

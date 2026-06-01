@@ -5,14 +5,14 @@ import csv
 # ALGORITHME TIKTOK — Détection de Partenariats
 # ============================================
 
-RE_COLLAB_COMM    = re.compile(r'collaboration\s+commerciale?', re.I)
-RE_HASHTAG_AD     = re.compile(r'#ad\b', re.I)
-RE_PUBLICITE      = re.compile(r'publicit[eéè]', re.I)  # optionnel (voir note)
-RE_PROMO_SITE     = re.compile(
-    r'profitez de\s+(?:-|moins\s+)?\d+%\s+sur\s+(?:tout\s+le\s+site|le\s+site)\s+.{0,30}code',
+RE_COLLAB_COMM = re.compile(r"collaboration\s+commerciale?", re.I)
+RE_HASHTAG_AD = re.compile(r"#ad\b", re.I)
+RE_PUBLICITE = re.compile(r"publicit[eéè]", re.I)  # optionnel (voir note)
+RE_PROMO_SITE = re.compile(
+    r"profitez de\s+(?:-|moins\s+)?\d+%\s+sur\s+(?:tout\s+le\s+site|le\s+site)\s+.{0,30}code",
     re.I,
 )
-RE_SPONSORED      = re.compile(r'#sponsor(?:ed|is[eéè])', re.I)
+RE_SPONSORED = re.compile(r"#sponsor(?:ed|is[eéè])", re.I)
 
 
 def detect_tiktok_partnership(
@@ -37,9 +37,9 @@ def detect_tiktok_partnership(
         brands   : list[str]   – @mentions extraites si partenariat détecté
         rules    : list[str]
     """
-    desc_lower  = (description or "").lower()
+    desc_lower = (description or "").lower()
     title_lower = (title or "").lower()
-    full_text   = desc_lower + " " + title_lower
+    full_text = desc_lower + " " + title_lower
 
     detected = False
     brands = set()
@@ -72,7 +72,7 @@ def detect_tiktok_partnership(
 
     # Extraction des @mentions si partenariat détecté
     if detected:
-        mentions = re.findall(r'@([\w.\-]+)', full_text)
+        mentions = re.findall(r"@([\w.\-]+)", full_text)
         for m in mentions:
             if len(m) > 2:
                 brands.add(m)
@@ -83,7 +83,7 @@ def detect_tiktok_partnership(
 # ============================================
 # ÉVALUATION
 # ============================================
-def evaluate_tiktok(csv_path: str, include_publicite: bool = False):
+def evaluate_tiktok(csv_path: str, include_publicite: bool = False) -> None:
     """
     Lit le CSV exporté de la feuille 'TikTok' et évalue l'algorithme.
 
@@ -100,10 +100,10 @@ def evaluate_tiktok(csv_path: str, include_publicite: bool = False):
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader, start=2):
-            title       = row.get("Title", "")
+            title = row.get("Title", "")
             description = row.get("Description", "")
-            gt          = row.get("Partenariat_Détecté", "").strip()
-            gt_partner  = row.get("Partenaire(s)", "")
+            gt = row.get("Partenariat_Détecté", "").strip()
+            gt_partner = row.get("Partenaire(s)", "")
 
             if gt not in ("Oui", "Non"):
                 continue
@@ -117,29 +117,33 @@ def evaluate_tiktok(csv_path: str, include_publicite: bool = False):
                     TP += 1
                 else:
                     FN += 1
-                    fn_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "partner": gt_partner,
-                    })
+                    fn_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "partner": gt_partner,
+                        }
+                    )
             elif gt == "Non":
                 if result["detected"]:
                     FP += 1
-                    fp_details.append({
-                        "row": i,
-                        "title": title[:60],
-                        "rules": result["rules"],
-                        "account": row.get("Account Name", ""),
-                    })
+                    fp_details.append(
+                        {
+                            "row": i,
+                            "title": title[:60],
+                            "rules": result["rules"],
+                            "account": row.get("Account Name", ""),
+                        }
+                    )
                 else:
                     TN += 1
 
     total = TP + FP + FN + TN
-    recall    = TP / (TP + FN) if (TP + FN) else 0
-    fpr       = FP / (FP + TN) if (FP + TN) else 0
+    recall = TP / (TP + FN) if (TP + FN) else 0
+    fpr = FP / (FP + TN) if (FP + TN) else 0
     miss_rate = FN / (FN + TP) if (FN + TP) else 0
     precision = TP / (TP + FP) if (TP + FP) else 0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
 
     mode = "AVEC" if include_publicite else "SANS"
     print("=" * 55)

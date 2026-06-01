@@ -173,3 +173,5 @@ playground
 # Exclude openapi-generator file
 .openapi-generator
 noco_setup/.tmp/
+brand-annotation/data/scrapped/*.csv
+brand-annotation/data/results/*.csv

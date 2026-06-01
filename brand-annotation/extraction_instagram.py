@@ -347,7 +347,7 @@ def _brands_match(gt: str, extracted: str) -> bool:
     return ratio >= _FUZZY_THRESHOLD
 
 
-def _print_metrics(label: str, TP: int, FP: int, FN: int, TN: int):
+def _print_metrics(label: str, TP: int, FP: int, FN: int, TN: int) -> None:
     total = TP + FP + FN + TN
     recall = TP / (TP + FN) if (TP + FN) else 0
     fpr = FP / (FP + TN) if (FP + TN) else 0
@@ -377,7 +377,7 @@ def _print_metrics(label: str, TP: int, FP: int, FN: int, TN: int):
 # ============================================
 
 
-def evaluate_scraping(csv_path: str):
+def evaluate_scraping(csv_path: str) -> None:
     """
     Évalue la qualité du scraping Instagram :
     - Signal scrappé  : SN Brand non vide OU SN Has Paid Placement == true
@@ -448,8 +448,7 @@ def evaluate_scraping(csv_path: str):
             )
 
     # Règles qui ont couvert les TP
-    print(f"\n  Distribution des signaux scrappés sur les TP :")
-    tp_with_sn = sum(1 for d in [] if True)  # recompute inline
+    print("\n  Distribution des signaux scrappés sur les TP :")
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
@@ -482,15 +481,15 @@ def evaluate_scraping(csv_path: str):
 # ============================================
 
 
-def evaluate_regex(csv_path: str):
+def evaluate_regex(csv_path: str) -> None:
     """
     Évalue la qualité de la détection par regex Instagram.
     Ground truth : DA - Manuel Collab Brand non vide = partenariat.
     """
     TP = FP = FN = TN = 0
-    fn_details = []
-    fp_details = []
-    rule_counts = Counter()
+    fn_details: list[dict[str, str | int]] = []
+    fp_details: list[dict[str, str | int]] = []
+    rule_counts: Counter[str] = Counter()
 
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -540,7 +539,7 @@ def evaluate_regex(csv_path: str):
 
     _print_metrics("INSTAGRAM — Qualité du Regex (toutes règles)", TP, FP, FN, TN)
 
-    print(f"\n  Déclenchements par règle (sur l'ensemble du dataset) :")
+    print("\n  Déclenchements par règle (sur l'ensemble du dataset) :")
     for rule, count in rule_counts.most_common():
         print(f"    {rule:<25} : {count}")
 
@@ -564,15 +563,15 @@ def evaluate_regex(csv_path: str):
 # ============================================
 
 
-def evaluate_regex_only(csv_path: str):
+def evaluate_regex_only(csv_path: str) -> None:
     """
     Évalue uniquement les règles textuelles (sans SN Brand ni Paid Placement),
     pour mesurer la valeur ajoutée du regex indépendamment du scraping.
     """
     TP = FP = FN = TN = 0
-    fn_details = []
-    fp_details = []
-    rule_counts = Counter()
+    fn_details: list[dict[str, str | int]] = []
+    fp_details: list[dict[str, str | int]] = []
+    rule_counts: Counter[str] = Counter()
 
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -623,7 +622,7 @@ def evaluate_regex_only(csv_path: str):
         "INSTAGRAM — Regex seul (sans SN Brand / Paid Placement)", TP, FP, FN, TN
     )
 
-    print(f"\n  Déclenchements par règle :")
+    print("\n  Déclenchements par règle :")
     for rule, count in rule_counts.most_common():
         print(f"    {rule:<25} : {count}")
 
@@ -647,7 +646,7 @@ def evaluate_regex_only(csv_path: str):
 # ============================================
 
 
-def evaluate_brand_extraction(csv_path: str):
+def evaluate_brand_extraction(csv_path: str) -> None:
     """
     Évalue la précision de extract_primary_brand() sur les vrais positifs détectés
     par le regex.
@@ -731,17 +730,17 @@ def evaluate_brand_extraction(csv_path: str):
     print("=" * 65)
     print(f"  Vrais Positifs analysés          : {total_tp}")
     print(
-        f"  Handle exact / sous-chaîne       : {exact}  ({exact/total_tp:.1%})"
+        f"  Handle exact / sous-chaîne       : {exact}  ({exact / total_tp:.1%})"
         if total_tp
         else ""
     )
     print(
-        f"  Aucune @mention dans la desc.     : {no_mention}  ({no_mention/total_tp:.1%})"
+        f"  Aucune @mention dans la desc.     : {no_mention}  ({no_mention / total_tp:.1%})"
         if total_tp
         else ""
     )
     print(
-        f"  Mauvaise marque extraite          : {mismatch}  ({mismatch/total_tp:.1%})"
+        f"  Mauvaise marque extraite          : {mismatch}  ({mismatch / total_tp:.1%})"
         f"  dont {partial} avec la bonne marque ailleurs dans le texte"
         if total_tp
         else ""
@@ -749,7 +748,7 @@ def evaluate_brand_extraction(csv_path: str):
     print("-" * 65)
     if total_tp:
         print(
-            f"  Précision globale                 : {correct/total_tp:.1%}  ({correct}/{total_tp})"
+            f"  Précision globale                 : {correct / total_tp:.1%}  ({correct}/{total_tp})"
         )
     print("=" * 65)
 
@@ -773,8 +772,8 @@ def evaluate_brand_extraction(csv_path: str):
 
 try:
     import numpy as np
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
+    import matplotlib.pyplot as plt  # type: ignore[import-untyped]
+    import matplotlib.ticker as mticker  # type: ignore[import-untyped]
 
     _PLOT_AVAILABLE = True
 except ImportError:
@@ -796,7 +795,7 @@ def _analyse_dataset(csv_path: str, has_gt: bool) -> dict:
         "gt": ["DA - Manuel Collab Brand"],
     }
 
-    def _get(row, key):
+    def _get(row: dict[str, str], key: str) -> str:
         for col in COLUMN_MAP[key]:
             if col in row:
                 return row[col].strip()
@@ -864,6 +863,7 @@ def _analyse_dataset(csv_path: str, has_gt: bool) -> dict:
     # Toutes les marques normalisées
     groups: dict = {}
     for brand, count in brand_counts.items():
+        assert brand is not None
         key = _normalize_brand(brand)
         if key not in groups:
             groups[key] = Counter()
@@ -883,7 +883,7 @@ def _analyse_dataset(csv_path: str, has_gt: bool) -> dict:
     )
 
 
-def compare_datasets(csv_labelled: str, csv_production: str):
+def compare_datasets(csv_labelled: str, csv_production: str) -> None:
     """
     Compare les résultats de l'algo sur deux CSV :
       - csv_labelled   : avec ground truth (DA - Manuel Collab Brand)
@@ -940,7 +940,7 @@ def compare_datasets(csv_labelled: str, csv_production: str):
     print("  " + "-" * 48)
     for key in merged:
         print(
-            f"  @{brand_display.get(key, key):<31} {da.get(key,0):>6}  {db.get(key,0):>6}"
+            f"  @{brand_display.get(key, key):<31} {da.get(key, 0):>6}  {db.get(key, 0):>6}"
         )
 
     all_rules = sorted(
@@ -951,7 +951,7 @@ def compare_datasets(csv_labelled: str, csv_production: str):
     print("  " + "-" * 48)
     for rule in all_rules:
         print(
-            f"  {rule:<32} {a['rule_counts'].get(rule,0):>6}  {b['rule_counts'].get(rule,0):>6}"
+            f"  {rule:<32} {a['rule_counts'].get(rule, 0):>6}  {b['rule_counts'].get(rule, 0):>6}"
         )
     print("=" * 68)
 

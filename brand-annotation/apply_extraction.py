@@ -10,6 +10,18 @@ except ImportError:
     print("Error: 'extraction_instagram.py' not found in the same directory.")
     sys.exit(1)
 
+try:
+    from extraction_tiktok import detect_tiktok_partnership
+except ImportError:
+    print("Error: 'extraction_tiktok.py' not found in the same directory.")
+    sys.exit(1)
+
+try:
+    from extraction_youtube import detect_youtube_partnership
+except ImportError:
+    print("Error: 'extraction_youtube.py' not found in the same directory.")
+    sys.exit(1)
+
 # Mapping to handle variations in input CSV column names (case-insensitive)
 COLUMN_MAP = {
     "post_id": ["post-id", "id", "post id", "post_id"],
@@ -37,7 +49,7 @@ def get_mapped_value(row: dict, field_keys: list[str]) -> str:
     return ""
 
 
-def process_dataset(input_csv: str, output_csv: str, social_network: str):
+def process_dataset(input_csv: str, output_csv: str, social_network: str) -> None:
     print(f"Loading new dataset: {input_csv}")
     print(f"Social Network set to: {social_network}")
 
@@ -78,12 +90,27 @@ def process_dataset(input_csv: str, output_csv: str, social_network: str):
                 paid_placement = paid_raw.lower() in ("true", "1", "vrai", "yes")
 
                 # 2. Run your existing algorithm
-                result = detect_instagram_partnership(
-                    title=title,
-                    description=desc,
-                    sn_brand=sn_brand,
-                    paid_placement=paid_placement,
-                )
+                if social_network == "instagram":
+                    result = detect_instagram_partnership(
+                        title=title,
+                        description=desc,
+                        sn_brand=sn_brand,
+                        paid_placement=paid_placement,
+                    )
+                elif social_network == "youtube":
+                    result = detect_youtube_partnership(
+                        title=title,
+                        description=desc,
+                        paid_placement=paid_placement,
+                    )
+                elif social_network == "tiktok":
+                    result = detect_tiktok_partnership(
+                        title=title,
+                        description=desc,
+                        include_publicite=paid_placement,
+                    )
+                else:
+                    raise Exception("Unexpected social_network:" + social_network)
 
                 # 3. Format and write the output
                 has_collab = result["detected"]
@@ -105,7 +132,7 @@ def process_dataset(input_csv: str, output_csv: str, social_network: str):
                 if has_collab:
                     detected_count += 1
 
-        print(f"✅ Extraction complete!")
+        print("✅ Extraction complete!")
         print(f"📊 Processed {processed_count} posts.")
         print(f"🎯 Detected {detected_count} collaborations.")
         print(f"📁 Output saved to: {output_csv}")
@@ -116,31 +143,36 @@ def process_dataset(input_csv: str, output_csv: str, social_network: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract partnerships to a clean CSV.")
-    parser.add_argument("input_csv", help="Path to the new raw dataset CSV.")
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="Path for the output CSV. Defaults to 'extracted_<input_name>'",
-        default=None,
-    )
+
     parser.add_argument(
         "-n",
         "--network",
         help="Social network name to populate the column",
-        default="Instagram",
     )
 
-    args = (
-        parser.ArgumentParser().parse_args()
-        if len(sys.argv) == 1
-        else parser.parse_args()
+    parser.add_argument(
+        "-i",
+        "--input",
+        help="Path to the new raw dataset CSV. Defaults to ./data/scrapped/<network>.csv",
+        default=None,
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Path for the output CSV. Defaults to './data/results/<network>.csv'",
+        default=None,
     )
 
-    input_path = Path(args.input_csv)
+    args = parser.parse_args() if len(sys.argv) == 1 else parser.parse_args()
+
+    if args.input:
+        input_path = Path(args.input)
+    else:
+        input_path = Path("./data/scrapped/" + args.network + ".csv")
 
     if args.output:
-        output_path = args.output
+        output_path = Path(args.output)
     else:
-        output_path = input_path.parent / f"extracted_{input_path.name}"
+        output_path = Path("./data/results/" + args.network + ".csv")
 
     process_dataset(str(input_path), str(output_path), args.network)

@@ -51,8 +51,7 @@ See [./data-extractors/README.md](./data-extractors/README.md)
 
 ## Running brand annotation
 
-TODO update doc once brand annotation code is committed
-
+See [./brand-annotation/README.md](./brand-annotation/README.md)
 
 # Staging Environment
 
