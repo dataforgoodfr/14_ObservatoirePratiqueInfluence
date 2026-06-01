@@ -1,0 +1,95 @@
+{
+  "title": "Post",
+  "description": "Post Table",
+  "fields": [
+    {
+      "title": "Post Id",
+      "type": "SingleLineText",
+      "description": "Post Id as defined in the social network platform.\ne.g. :\n* the value of the v query param in a youtube video url https://www.youtube.com/watch?v=<post-id>\n* the path after reels in a instagram reel url part https://www.instagram.com/reels/<post-id>/"
+    },
+    {
+      "title": "Post Url",
+      "type": "URL"
+    },
+    {
+      "title": "Published At",
+      "type": "DateTime",
+      "system": false,
+      "options": {
+        "date_format": "YYYY-MM-DD",
+        "time_format": "HH:mm",
+        "12hr_format": false
+      },
+      "description": "Date at which the ppost was published"
+    },
+    {
+      "title": "Title",
+      "type": "SingleLineText",
+      "system": false,
+      "description": "Post Title"
+    },
+    {
+      "title": "Description",
+      "type": "LongText",
+      "system": false,
+      "description": "The post description"
+    },
+    {
+      "title": "Comment Count",
+      "type": "Number",
+      "system": false,
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Save Count",
+      "type": "Number",
+      "system": false,
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "View Count",
+      "type": "Number",
+      "system": false,
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Repost Count",
+      "type": "Number",
+      "system": false,
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Share Count",
+      "type": "Number",
+      "system": false,
+      "options": { "locale_string": false }
+    },
+    {
+      "title": "Categories",
+      "type": "LongText",
+      "system": false
+    },
+    {
+      "title": "Tags",
+      "type": "LongText",
+      "system": false
+    },
+
+    {
+      "title": "Post Type",
+      "type": "SingleLineText",
+      "system": false
+    },
+    {
+      "title": "SN Brand",
+      "type": "SingleLineText",
+      "system": false
+    },
+    {
+      "title": "SN Has Paid Placement",
+      "type": "Checkbox",
+      "default_value": "false",
+      "system": false
+    }
+  ]
+}
