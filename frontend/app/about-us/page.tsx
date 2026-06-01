@@ -5,26 +5,6 @@ import { Highlight } from "@/components/Highlight";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
-// TO BE REMOVED
-export function ImagePlaceholder() {
-  return (
-    <div className="w-full lg:w-1/2 aspect-video rounded-2xl bg-muted flex items-center justify-center">
-      <svg
-        className="h-16 w-16 text-muted-foreground/40"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="1.5" />
-        <circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" />
-        <path strokeWidth="1.5" d="M21 15l-5-5L5 21" />
-      </svg>
-    </div>
-  );
-}
-
 export default function AboutUsPage() {
   return (
     <main className="min-h-screen font-sans bg-background">

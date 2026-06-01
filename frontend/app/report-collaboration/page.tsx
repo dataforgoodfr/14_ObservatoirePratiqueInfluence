@@ -1,9 +1,8 @@
+import Image from "next/image";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
-import { ImagePlaceholder } from "../about-us/page";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button-variants";
-import { cn } from "@/lib/utils";
+
+const CONTACT_EMAIL = "test@test.fr";
 
 export default function ReportCollaborationPage() {
   return (
@@ -26,9 +25,52 @@ export default function ReportCollaborationPage() {
           </div>
         </Container>
       </section>
+
       <section
-        aria-label="Je suis créateur de contenu et je me pose des questions ..."
+        aria-label="Je signale une collaboration qui pose problème"
         className="py-15"
+      >
+        <Container>
+          <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center">
+            <div className="flex flex-col gap-6 w-full lg:w-1/2">
+              <h2 className="text-foreground font-bold leading-tight text-3xl md:text-4xl">
+                {"Je signale une collaboration qui pose problème"}
+              </h2>
+              <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
+                <p>
+                  {
+                    "Tu as vu passer sur les réseaux sociaux une collaboration entre un créateur de contenu et une organisation, mais quelque chose cloche : propos peu fiables, greenwashing suspect, ou mise en valeur d'une entité aux forts impacts environnementaux ?"
+                  }
+                </p>
+                <p>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="underline"
+                    aria-label={`Envoyer un email à ${CONTACT_EMAIL} pour signaler une publication`}
+                  >
+                    {"Envoie-nous la publication"}
+                  </a>
+                  {"."}
+                </p>
+              </div>
+            </div>
+
+            <div className="relative w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden">
+              <Image
+                src="/reportCollab-part1.jpg"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section
+        aria-label="Je suis créateur de contenu et je me pose des questions"
+        className="py-15 bg-muted"
       >
         <Container>
           <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center">
@@ -39,28 +81,32 @@ export default function ReportCollaborationPage() {
               <div className="flex flex-col gap-4 text-foreground text-base leading-relaxed">
                 <p>
                   {
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim"
+                    "Une organisation te contacte, l'offre est intéressante, mais tu n'arrives pas à savoir si l'entité est éthique. Son impact environnemental, ses pratiques, les clauses du contrat, sa réputation. Tu ne sais pas trop si c'est une bonne idée."
                   }
                 </p>
                 <p>
-                  {
-                    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate"
-                  }
+                  {"Tu peux nous envoyer un message "}
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="underline"
+                    aria-label={`Envoyer un email à ${CONTACT_EMAIL}`}
+                  >
+                    {"ici"}
+                  </a>
+                  {" et on te répondra."}
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-3 mt-2">
-                <Link
-                  href="#"
-                  className={cn(
-                    buttonVariants({ variant: "highlight", size: "pill" }),
-                  )}
-                >
-                  {"Nous contacter"}
-                </Link>
               </div>
             </div>
 
-            <ImagePlaceholder />
+            <div className="relative w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden">
+              <Image
+                src="/reportCollab-part2.jpg"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
           </div>
         </Container>
       </section>
