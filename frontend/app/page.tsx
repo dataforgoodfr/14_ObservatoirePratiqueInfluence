@@ -121,6 +121,7 @@ export default function Home() {
                 {
                   metric: "61%",
                   text: "des Français estiment que les influenceurs ont un impact direct sur leurs goûts et leurs modes de consommation.",
+                  sourceIndex: 1,
                 },
                 {
                   metric: "85%",
@@ -129,6 +130,7 @@ export default function Home() {
                 {
                   metric: "84%",
                   text: "des 15-25 ans suivent des influenceurs.",
+                  sourceIndex: 2,
                 },
               ].map((infosToBeDisplayed, index) => (
                 <div key={index} className="flex flex-col gap-6">
@@ -139,10 +141,35 @@ export default function Home() {
                   </p>
                   <p className="text-base text-center text-white font-bold leading-relaxed">
                     {infosToBeDisplayed.text}
+                    {infosToBeDisplayed.sourceIndex !== undefined && (
+                      <sup
+                        aria-describedby={`source-${infosToBeDisplayed.sourceIndex}`}
+                        className="ml-0.5 text-white/70 font-normal"
+                      >
+                        {infosToBeDisplayed.sourceIndex}
+                      </sup>
+                    )}
                   </p>
                 </div>
               ))}
             </div>
+
+            <aside
+              aria-label="Sources des chiffres cités"
+              className="border-t border-white/20 pt-6 text-white/60 text-xs leading-relaxed"
+            >
+              <ol className="flex flex-col gap-1 list-none">
+                {[
+                  "Observatoire Cetelem et Harris Interactive (2023)",
+                  "Statista 2025",
+                ].map((source, i) => (
+                  <li key={i} id={`source-${i + 1}`}>
+                    <sup className="mr-1">{i + 1}</sup>
+                    {source}
+                  </li>
+                ))}
+              </ol>
+            </aside>
           </div>
         </Container>
       </section>
