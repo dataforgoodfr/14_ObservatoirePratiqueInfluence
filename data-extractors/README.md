@@ -5,7 +5,7 @@ This python CLI allows to extract posts and accounts from supported social netwo
 
 It can be used with 2 different task and result backends depending on use case:
 * The `filesystem backend` is mostly for testing or single machine extraction.
-* The `Data Extraction API Backend` allows to share and distributes a pool of extraction tasks across multiple machines for parallel execution
+* The `Data Extraction API Backend` allows to share and distributes a pool of extraction tasks across multiple machines for parallel execution. 
 
 # Using CLI with filesystem backend
 
@@ -17,7 +17,7 @@ It can be used with 2 different task and result backends depending on use case:
     * or manually editing [./data/extraction-tasks.csv] ([see file format doc below](#extraction-taskscsv)).
 3. Run the extraction using the `extract` CLI sub-command ([see doc below](#extract-sub-command)).
 4. Use data from local [./data/results/accounts.csv] and [./data/results/posts.csv]
-5. Optionally upload the data from [./data/results/accounts.csv] and [./data/results/posts.csv] to a NocoDB using `upload-results` sub-command (see reference doc below)
+5. Optionally upload the data from [./data/results/accounts.csv] and [./data/results/posts.csv] to a NocoDB using `upload-results` sub-command (see reference doc below). You will need to create the data model in Nocodb manually, using the types shown below !
 
 
 ## .env config for file system backend
@@ -75,9 +75,9 @@ GENERATE_TASK_API_KEY=<Token matching the env API_KEY used when starting backend
 # CLI Reference documentation
 
 The CLI is composed of 3 commands:
-* extract
-* generate-task
-* upload-results:
+*  generate-task (step 1)
+*  extract (step 2)
+*  upload-results (step 3)
 
 CLI can be run using `uv run src/main.py <subcommand>`
 
@@ -85,9 +85,42 @@ CLI can be run using `uv run src/main.py <subcommand>`
 * Clone repository
 * [uv](https://docs.astral.sh/uv/getting-started/installation/)
 * run `uv sync` in repository data-extractors folder
+* check that playwright is installed
 * Optional: If using the *Data Extraction API Backend* the server needs to be started somewhere (see dedicated doc [../opi-api/README.md])
 
 ## Commands
+
+### generate-task sub-command
+
+Reads a CSV of account URLs and generates extraction tasks, storing them to either the filesystem or the API backend.
+
+Input file format ([`data/account_urls.csv`] by default):
+```csv
+Account Url
+https://www.instagram.com/nabilla
+https://www.tiktok.com/@tiboinshape
+https://www.youtube.com/channel/UCWeg2Pkate69NFdBeuRFTAw
+```
+
+For each URL, the command detects the social network from the URL and creates tasks (either `extract-account`, `extract-post-list`, or both).
+
+Options:
+- `--task-type` / env: `GENERATE_TASK_TASK_TYPE` — which task types to generate. Choices: `all`, `account`, `post-list`. Default: `all`.
+- `--published-after` / env: `GENERATE_TASK_PUBLISHED_AFTER` — start date for post-list tasks (ISO 8601). Default: `2025-01-01T00:00:00+00:00`.
+- `--published-before` / env: `GENERATE_TASK_PUBLISHED_BEFORE` — end date for post-list tasks (ISO 8601). Default: `2026-01-01T00:00:00+00:00`.
+- `--urls-file` / env: `GENERATE_TASK_URLS_FILE` — input CSV with account URLs. Default: `data/account_urls.csv`.
+- `--backend` / env: `GENERATE_TASK_BACKEND` — where to store generated tasks. Choices: `fs`, `api`. Default: `fs`.
+- `--api-url` / env: `GENERATE_TASK_API_URL` — API URL (if backend=`api`). Default: `http://localhost:8000`.
+- `--api-key` / env: `GENERATE_TASK_API_KEY` — API token (if backend=`api`).
+- `--fs-replace` / env: `GENERATE_TASK_FS_REPLACE` — replace or append to existing tasks CSV. Default: `false`.
+- `--fs-tasks-file` / env: `GENERATE_TASK_FS_TASKS_FILE` — output tasks CSV path. Default: `data/extraction_tasks.csv`.
+
+exemple :
+```
+uv run src/main.py generate-task \
+  --published-after 2026-01-01T00:00:00Z \
+  --published-before 2026-04-01T00:00:00Z
+```
 
 ### extract sub-command
 This command starts a long running process that:
@@ -138,31 +171,6 @@ Connect your PC to internet through your phone mobile connection using a hotspot
 
 Instagram extraction supports account extraction (profile info, followers, followees), post list extraction (with date filtering, pinned posts handled), and post detail extraction (includes sponsor/brand detection via `is_sponsored`).
 
-
-### generate-task sub-command
-
-Reads a CSV of account URLs and generates extraction tasks, storing them to either the filesystem or the API backend.
-
-Input file format ([`data/account_urls.csv`] by default):
-```csv
-Account Url
-https://www.instagram.com/nabilla
-https://www.tiktok.com/@tiboinshape
-https://www.youtube.com/channel/UCWeg2Pkate69NFdBeuRFTAw
-```
-
-For each URL, the command detects the social network from the URL and creates tasks (either `extract-account`, `extract-post-list`, or both).
-
-Options:
-- `--task-type` / env: `GENERATE_TASK_TASK_TYPE` — which task types to generate. Choices: `all`, `account`, `post-list`. Default: `all`.
-- `--published-after` / env: `GENERATE_TASK_PUBLISHED_AFTER` — start date for post-list tasks (ISO 8601). Default: `2025-01-01T00:00:00+00:00`.
-- `--published-before` / env: `GENERATE_TASK_PUBLISHED_BEFORE` — end date for post-list tasks (ISO 8601). Default: `2026-01-01T00:00:00+00:00`.
-- `--urls-file` / env: `GENERATE_TASK_URLS_FILE` — input CSV with account URLs. Default: `data/account_urls.csv`.
-- `--backend` / env: `GENERATE_TASK_BACKEND` — where to store generated tasks. Choices: `fs`, `api`. Default: `fs`.
-- `--api-url` / env: `GENERATE_TASK_API_URL` — API URL (if backend=`api`). Default: `http://localhost:8000`.
-- `--api-key` / env: `GENERATE_TASK_API_KEY` — API token (if backend=`api`).
-- `--fs-replace` / env: `GENERATE_TASK_FS_REPLACE` — replace or append to existing tasks CSV. Default: `false`.
-- `--fs-tasks-file` / env: `GENERATE_TASK_FS_TASKS_FILE` — output tasks CSV path. Default: `data/extraction_tasks.csv`.
 
 ### upload-results sub-command
 
