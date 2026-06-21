@@ -2,7 +2,10 @@ import Image from "next/image";
 import { Container } from "@/components/Container";
 import { Highlight } from "@/components/Highlight";
 
-const CONTACT_EMAIL = "test@test.fr";
+const REPORT_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfy_PhiirecJidWwQ9NnSOFduyw6dnqiriWBOouxwDXa2usLA/viewform";
+const CREATOR_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfLo45lpoFTB8wVuMdP6SJFTY3m_5K4czQmRV-UkJcio7s-7Q/viewform";
 
 export default function ReportCollaborationPage() {
   return (
@@ -44,9 +47,11 @@ export default function ReportCollaborationPage() {
                 </p>
                 <p>
                   <a
-                    href={`mailto:${CONTACT_EMAIL}`}
+                    href={REPORT_FORM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline"
-                    aria-label={`Envoyer un email à ${CONTACT_EMAIL} pour signaler une publication`}
+                    aria-label="Ouvrir le formulaire pour signaler une publication"
                   >
                     {"Envoie-nous la publication"}
                   </a>
@@ -87,9 +92,11 @@ export default function ReportCollaborationPage() {
                 <p>
                   {"Tu peux nous envoyer un message "}
                   <a
-                    href={`mailto:${CONTACT_EMAIL}`}
+                    href={CREATOR_FORM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline"
-                    aria-label={`Envoyer un email à ${CONTACT_EMAIL}`}
+                    aria-label="Ouvrir le formulaire pour poser une question"
                   >
                     {"ici"}
                   </a>

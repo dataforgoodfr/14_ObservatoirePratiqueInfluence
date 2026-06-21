@@ -126,11 +126,12 @@ export default function Home() {
                 {
                   metric: "85%",
                   text: "des personnes exposées à un partenariat entre une marque et un influenceur ont envisagé un achat.",
+                  sourceIndex: 2,
                 },
                 {
                   metric: "84%",
                   text: "des 15-25 ans suivent des influenceurs.",
-                  sourceIndex: 2,
+                  sourceIndex: 3,
                 },
               ].map((infosToBeDisplayed, index) => (
                 <div key={index} className="flex flex-col gap-6">
@@ -162,6 +163,7 @@ export default function Home() {
                 {[
                   "Observatoire Cetelem et Harris Interactive (2023)",
                   "Statista 2025",
+                  "Étude Toluna-Harris Interactive et 100% Media, 2022",
                 ].map((source, i) => (
                   <li key={i} id={`source-${i + 1}`}>
                     <sup className="mr-1">{i + 1}</sup>
