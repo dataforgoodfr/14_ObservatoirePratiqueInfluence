@@ -107,7 +107,7 @@ export default function AboutUsPage() {
       </section>
 
       <section
-        aria-label="À propos de l’observatoire de l’influence responsable"
+        aria-label="À propos de la méthodologie de l’Observatoire"
         className="py-15"
       >
         <Container>
@@ -148,15 +148,11 @@ export default function AboutUsPage() {
                   <strong>{"Sur Instagram :"}</strong>
                 </p>
                 <ul className="list-disc pl-6 flex flex-col gap-2">
-                  <li>
-                    {"les posts à l’exclusion des Reels et des Stories."}
-                  </li>
+                  <li>{"les posts à l’exclusion des Reels et des Stories."}</li>
                 </ul>
               </div>
               <ul className="list-disc pl-6 flex flex-col gap-2">
-                <li>
-                  {"1 147 comptes scrapés pour 185 425 posts récupérés."}
-                </li>
+                <li>{"1 147 comptes scrapés pour 185 425 posts récupérés."}</li>
                 <li>{"YouTube : 337 comptes, ~31 000 posts."}</li>
                 <li>{"Instagram : 219 comptes, ~24 000 posts."}</li>
                 <li>{"TikTok : 591 comptes, ~129 000 posts."}</li>
@@ -177,9 +173,7 @@ export default function AboutUsPage() {
                   }
                 </li>
                 <li>{"YouTube : 1 033 posts en collab pour 183 marques."}</li>
-                <li>
-                  {"Instagram : 1 449 posts en collab pour 537 marques."}
-                </li>
+                <li>{"Instagram : 1 449 posts en collab pour 537 marques."}</li>
                 <li>{"TikTok : 5 036 posts en collab pour 945 marques."}</li>
               </ul>
 
