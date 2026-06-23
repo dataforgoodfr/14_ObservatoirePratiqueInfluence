@@ -89,7 +89,7 @@ export function Footer() {
 
           <div className="mt-8 flex justify-end border-t border-border pt-4">
             <Link
-              href="#"
+              href="/legal-content"
               className="text-xs text-muted-foreground transition-colors duration-300 hover:text-foreground"
             >
               Mentions légales

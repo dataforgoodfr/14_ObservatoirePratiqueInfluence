@@ -191,14 +191,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-16 gap-y-8 w-full max-w-2xl">
-              {[
-                "Fast Food",
-                "Fast Fashion",
-                "Fast Travel",
-                "Fast Food",
-                "Fast Fashion",
-                "Fast Travel",
-              ].map((label, i) => (
+              {["Fast Food", "Fast Fashion", "Fast Travel"].map((label, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <svg
                     className="h-8 w-8 shrink-0 text-foreground"
