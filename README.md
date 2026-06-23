@@ -17,11 +17,14 @@ For a list of all technical components, general data flow and data model see [./
 
 # Running things locally
 
-## Running the *Web Site* and *Data extraction Api Backend* using docker compose
+## Running the *Web Site*
+
+See  [./frontend/README.md](./frontend/README.md)
+
+
+## Running the *Data extraction Api Backend* using docker compose
 
 A docker compose exists that starts:
-
-- The Web site [./frontend/README.md](./frontend/README.md)
 - The Data Extraction API Backend see [./opi-api/README.md](./opi-api/README.md)
 - A local NocoDB used to store extraction results
 - A postgres used for 2 things:
@@ -41,8 +44,6 @@ A docker compose exists that starts:
 
 The build and start of docker-compose is wrapped in a make target:
 When running `make up`:
-
-- The website will be available at `http://localhost:3000/`
 - Extraction API Backend doc is available at `http://localhost:8000/docs#`
 
 ## Running data extraction
@@ -53,11 +54,11 @@ See [./data-extractors/README.md](./data-extractors/README.md)
 
 See [./brand-annotation/README.md](./brand-annotation/README.md)
 
-# Staging Environment
+# Deployment Environment
 
 Staging environment current setup:
 * _NocoDB_ base is hosted in D4G shared NocoDB
 * _Metabase_ runs on coolify deployed using predefined coolify service Metabase 
 * _Data Extraction API Backend_ runs on coolify and is re-deployed from `/opi-api/Dockerfile`on each commit to `main`
 * Postgres db for _Data Extraction API Backend_ runs on coolify
-* Website runs on coolify and is re-deployed using `/frontend/Dockerfile` on each commit to `main`
+* Website is deployed on github pages on each commit to `main` and is available on subdomain observatoire.payetoninfluence.org (subdomain managed by Amélie on OVH)
