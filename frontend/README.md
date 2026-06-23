@@ -24,7 +24,6 @@ frontend/
 │ │ ├── queries.ts # Fonctions de fetching colocalisées pour cette page
 │
 ├── lib/ # Logique partagée et utilitaires
-│ ├── metabase.ts # Génération d'URLs d'embed Metabase (JWT signé)
 │ └── utils.ts # Utilitaires partagés (dont `cn` pour la fusion de classes Tailwind)
 │
 ├── components/ # Composants React réutilisables
@@ -33,7 +32,7 @@ frontend/
 │
 ├── public/ # Assets statiques servis à la racine (accessibles via `/nom-du-fichier`)
 │
-├── .env.example # Variables d'environnement d'exemple à copier sur son .env local (URL + secret Metabase)
+├── .env.example # Variables d'environnement d'exemple à copier sur son .env local 
 ├── components.json # Configuration shadcn/ui (style, aliases, thème…)
 ├── next.config.ts # Configuration Next.js
 ├── tsconfig.json # Configuration TypeScript
@@ -41,16 +40,12 @@ frontend/
 
 ## Pour bien commencer en tant que developeur
 
-1: Récupérer `METABASE_URL` et `METABASE_SECRET_KEY` auprès de l'admin Metabase OPI.
-2: Copier `.env.example` et le renommer en `.env.local`. Renseigner les valeurs.
-
-3: Lancer le serveur de développement :
+1: Lancer le serveur de développement :
 
 ```bash
 npm run dev
 ```
-
-4: Lire attentivement la suite pour être en accord avec les "guidelines" du projet.
+2: Lire attentivement la suite pour être en accord avec les "guidelines" du projet.
 
 ---
 

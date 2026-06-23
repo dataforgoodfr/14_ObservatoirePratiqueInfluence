@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 
 interface MetabaseEmbedProps {
-  embedUrl: string;
+  dashboardPublicUrl: string;
   title?: string;
   className?: string;
 }
@@ -12,13 +12,13 @@ interface MetabaseEmbedProps {
  * Iframe responsive pour l'embedding statique Metabase.
  */
 export function MetabaseEmbed({
-  embedUrl,
+  dashboardPublicUrl,
   title = "Dashboard Metabase",
   className,
 }: MetabaseEmbedProps) {
   return (
     <iframe
-      src={embedUrl}
+      src={dashboardPublicUrl}
       title={title}
       className={cn("w-full rounded-lg border border-border", className)}
     />
