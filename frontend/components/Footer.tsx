@@ -67,6 +67,14 @@ export function Footer() {
                     Site internet
                   </Link>
                   <Link
+                    href="https://www.instagram.com/dataforgoodfr/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-foreground transition-colors duration-300 hover:text-brand-accent"
+                  >
+                    Instagram
+                  </Link>
+                  <Link
                     href="https://www.linkedin.com/company/dataforgood/posts/?feedView=all"
                     target="_blank"
                     rel="noopener noreferrer"
