@@ -1,20 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  async headers() {
-    return [
-      {
-        source: "/key-metrics",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: `frame-src ${process.env.METABASE_URL ?? "https://opi-metabase.services.d4g.fr"}`,
-          },
-        ],
-      },
-    ];
-  },
+  output: "export",
+  images: { unoptimized: true },
+  // Note:
+  // GH pages deployment generally require to configure a basePath.
+  // However this is not needed here as we have mapped a subdomain in gh config (observatoire.payetoninfluence.org)
 };
 
 export default nextConfig;

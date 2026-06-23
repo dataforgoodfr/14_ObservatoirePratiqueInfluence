@@ -10,7 +10,7 @@ The project is composed of the following components:
 | **NocoDB** | No-code database used as shared storage for extracted accounts and posts and brands | NocoDB , PostgreSQL backend |
 | **Metabase** | BI tool for dashboards and reports | Metabase (Coolify-managed) |
 | **PostgreSQL** | Relational database used by both the API backend (task queue) and NocoDB | PostgreSQL |
-| **Website** (`frontend`) | Public-facing Next.js application embedding Metabase dashboards | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui |
+| **Website** (`frontend`) | Static Next.js application embedding Metabase dashboards | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui |
 
 
 # Data flow

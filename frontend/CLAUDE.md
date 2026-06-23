@@ -10,7 +10,7 @@ Frontend de l'Observatoire des Pratiques d'Influence (OPI), projet Data For Good
 - **Langage** : TypeScript 5 (strict mode)
 - **Styling** : Tailwind CSS v4 + OKLCH color tokens
 - **Composants UI** : shadcn/ui (style `base-nova`, icônes `lucide-react`)
-- **Data viz** : Metabase (dashboards embarqués via JWT signé)
+- **Data viz** : Metabase (dashboards embarqués via lien public)
 - **Build** : output `standalone` (Docker)
 
 ## Commandes
@@ -34,7 +34,6 @@ components/
   ├── ui/                # Composants shadcn/ui (générés via CLI)
   └── ...                # Composants custom
 lib/
-  ├── metabase.ts        # Génération d'URLs d'embed Metabase (JWT signé)
   └── utils.ts           # Utilitaires (cn, etc.)
 ```
 
@@ -52,7 +51,6 @@ lib/
 
 ### Data fetching
 - Colocaliser les fonctions de fetch dans un fichier `queries.ts` au même niveau que la `page.tsx` de la route.
-- Pour intégrer un dashboard Metabase, utiliser `getMetabaseEmbedUrl()` depuis `lib/metabase.ts` (cf. `app/key-metrics/queries.ts` pour un exemple).
 
 ### Imports
 - Utiliser l'alias `@/` pour tous les imports (ex: `@/components/ui/button`, `@/lib/utils`).
